@@ -24,15 +24,10 @@ def run_inter_bot() -> None:
     missing_env_vars = []
 
     for var in required_env_vars:
-        value = os.environ.get(var) if os.environ.get(var) is not None else os.getenv(var)
-
-        if value is None:
+        if os.environ.get(var) is None:
             missing_env_vars.append(var)
         else:
-            if var in os.environ:
-                logger.info(f"Using {var} from Linux environment variable.")
-            else:
-                logger.info(f"Using {var} from .env file.")
+            logger.info(f"Loaded {var} from environment.")
 
     if missing_env_vars:
         for env_var in missing_env_vars:
