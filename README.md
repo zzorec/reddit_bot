@@ -1,9 +1,3 @@
-# r/FCInterMilan official subreddit bot
-
-**Note:** When updating bot's functionalities, make sure to update subreddits official wiki page with newly added commands/actions: https://www.reddit.com/r/FCInterMilan/wiki/bot-commands
-
----
-
 ### Running the bot
 
 Bot can be executed by running Python file `bot.py`.
