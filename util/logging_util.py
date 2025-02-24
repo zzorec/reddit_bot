@@ -3,7 +3,7 @@ import os
 from logging.handlers import RotatingFileHandler
 
 log_handler = RotatingFileHandler(
-    os.path.join(os.getcwd(), "inter_bot.log"),
+    os.path.join(os.getcwd(), "reddit_bot.log"),
     maxBytes=1000000000,
     backupCount=1,
     encoding='utf-8'
@@ -11,7 +11,7 @@ log_handler = RotatingFileHandler(
 
 log_handler.setFormatter(logging.Formatter("%(asctime)s || %(levelname)s || %(message)s"))
 
-logger = logging.getLogger('inter_bot')
+logger = logging.getLogger("reddit_bot")
 
 logger.setLevel(logging.INFO)
 

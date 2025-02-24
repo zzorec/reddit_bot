@@ -44,9 +44,9 @@ def update_sidebar(reddit_instance) -> None:
         for i in range(len(last_fixtures)):
             match_data = format_match(last_fixtures[i])
             if match_data["result"] == "P-P":
-                sidebar_content += f"{match_data["date"]}|{match_data["isAway"]}{match_data["opponent"]}|{match_data["result"]}|{match_data["league"]}\n"
+                sidebar_content += f"{match_data['date']}|{match_data['isAway']}{match_data['opponent']}|{match_data['result']}|{match_data['league']}\n"
             else:
-                sidebar_content += f"{match_data["date"]}|{match_data["isAway"]}{match_data["opponent"]}|{match_data["result"]} {last_fixtures[i]["goalsHomeTeam"]}-{last_fixtures[i]["goalsAwayTeam"]}|{match_data["league"]}\n"
+                sidebar_content += f"{match_data['date']}|{match_data['isAway']}{match_data['opponent']}|{match_data['result']} {last_fixtures[i]['goalsHomeTeam']}-{last_fixtures[i]['goalsAwayTeam']}|{match_data['league']}\n"
 
         # Get next 3 fixtures
         url_next_fixtures = f"{config.FootballRapidApi.FOOTBALL_RAPID_API_TEAM_FIXTURES_ENDPOINT}{config.FootballRapidApi.FOOTBALL_RAPID_API_INTER_CLUB_ID}/next/3"
@@ -57,7 +57,7 @@ def update_sidebar(reddit_instance) -> None:
             next_fixtures = response_next_fixtures_json.get("api", {}).get("fixtures", [])
             for i in range(len(next_fixtures)):
                 match_data = format_match(next_fixtures[i])
-                sidebar_content += f"{match_data["date"]}|{match_data["isAway"]}{match_data["opponent"]}||{match_data["league"]}\n"
+                sidebar_content += f"{match_data['date']}|{match_data['isAway']}{match_data['opponent']}||{match_data['league']}\n"
         else:
             logger.warning("Failed to fetch next fixtures data from Rapid Football API for sidebar update.")
     else:

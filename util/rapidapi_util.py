@@ -64,7 +64,7 @@ def get_club_world_cup_standings(comment) -> None:
                 fixture_result = ""
             else:
                 fixture_result = f"**{fixture["result"]} {fixture["goalsHomeTeam"]}-{fixture["goalsAwayTeam"]}**"
-            comment_response += f"{format_date(fixture["date"], True, False)}|{fixture["isAway"]}{fixture["opponent"]}|{fixture_result}|{fixture["round"]}\n"
+            comment_response += f"{format_date(fixture['date'], True, False)}|{fixture['isAway']}{fixture['opponent']}|{fixture_result}|{fixture['round']}\n"
 
     # Reply to comment.
     logger.info(f"Replied with FIFA Club World Cup standings information to comment: {str(comment.author).lower()}")
@@ -120,7 +120,7 @@ def get_champions_league_standings(comment) -> None:
                 fixture_result = ""
             else:
                 fixture_result = f"**{fixture["result"]} {fixture["goalsHomeTeam"]}-{fixture["goalsAwayTeam"]}**"
-            comment_response += f"{format_date(fixture["date"], True, False)}|{fixture["isAway"]}{fixture["opponent"]}|{fixture_result}|{fixture["round"]}\n"
+            comment_response += f"{format_date(fixture['date'], True, False)}|{fixture['isAway']}{fixture['opponent']}|{fixture_result}|{fixture['round']}\n"
 
     # Reply to comment.
     logger.info(f"Replied with Champions League standings information to comment: {str(comment.author).lower()}")
@@ -154,7 +154,7 @@ def getCoppaItaliaStandings(comment) -> None:
             fixture_result = ""
         else:
             fixture_result = f"**{fixture["result"]} {fixture["goalsHomeTeam"]}-{fixture["goalsAwayTeam"]}**"
-        comment_response += f"{format_date(fixture["date"], True, False)}|{fixture["isAway"]}{fixture["opponent"]}|{fixture_result}|{fixture["round"]}\n"
+        comment_response += f"{format_date(fixture['date'], True, False)}|{fixture['isAway']}{fixture['opponent']}|{fixture_result}|{fixture['round']}\n"
 
     # Reply to comment.
     logger.info(f"Replied with Coppa Italia standings information to comment: {str(comment.author).lower()}")
