@@ -1,4 +1,9 @@
+import os
 from typing import Final
+
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 class FootballRapidApi:
@@ -12,7 +17,10 @@ class FootballRapidApi:
     FOOTBALL_RAPID_API_SUPERCOPPA_ID: Final[int] = 6825
     FOOTBALL_RAPID_API_CLUB_WORLD_CUP_ID: Final[int] = 6922
 
-    FOOTBALL_RAPID_API_HEADERS: [dict[str, str]]  # This will be set in bot.py.
+    FOOTBALL_RAPID_API_HEADERS: Final[dict[str, str]] = {
+        "x-rapidapi-host": "api-football-v1.p.rapidapi.com",
+        "x-rapidapi-key": os.environ.get("RAPID_API_KEY")
+    }
 
     FOOTBALL_RAPID_API_BASE_ENDPOINT: Final[str] = "https://api-football-v1.p.rapidapi.com"
     FOOTBALL_RAPID_API_TEAM_FIXTURES_ENDPOINT: Final[str] = FOOTBALL_RAPID_API_BASE_ENDPOINT + "/v2/fixtures/team/"
@@ -24,9 +32,9 @@ class FootballRapidApi:
 
 class Reddit:
     # Reddit config.
-    SUBREDDIT_NAME: Final[str] = "FCInterMilan"
-    BOT_REDDIT_USER: Final[str] = "FCInterMilan"
-    APPROVED_USERS: Final[list[str]] = ["cerozz", "mangowhymango", "dr_gonzo__", "phil_996", "roaming_dinosaur", "cheezravioli"]
+    SUBREDDIT_NAME: Final[str] = os.environ.get("REDDIT_SUBREDDIT_NAME")
+    BOT_REDDIT_USER: Final[str] = os.environ.get("REDDIT_USERNAME")
+    APPROVED_USERS: Final[list[str]] = [user.strip() for user in os.environ.get("REDDIT_APPROVED_USER_LIST").split(",") if user.strip()]
 
     # Processing timings.
     MATCH_THREAD_CHECK_INTERVAL: Final[int] = 1800  # In seconds - every 30 minutes.
