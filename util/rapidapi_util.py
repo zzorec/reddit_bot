@@ -34,9 +34,9 @@ def get_club_world_cup_standings(comment) -> None:
             comment_response += "|:-:|:--|:-:|:-:|:-:|\n"
             for team in table:
                 if team["team_id"] == config.FootballRapidApi.FOOTBALL_RAPID_API_INTER_CLUB_ID:
-                    comment_response += f"| **{team["rank"]}** | **{team["teamName"]}** | **{team["all"]["matchsPlayed"]}** | **{team["goalsDiff"]}** | **{team["points"]}** |\n"
+                    comment_response += f"| **{team['rank']}** | **{team['teamName']}** | **{team['all']['matchsPlayed']}** | **{team['goalsDiff']}** | **{team['points']}** |\n"
                 else:
-                    comment_response += f"| {team["rank"]} | {team["teamName"]} | {team["all"]["matchsPlayed"]} | {team["goalsDiff"]} | {team["points"]} |\n"
+                    comment_response += f"| {team['rank']} | {team['teamName']} | {team['all']['matchsPlayed']} | {team['goalsDiff']} | {team['points']} |\n"
     else:
         logger.warning("Failed to fetch FIFA Club World Cup group stages data from Rapid Football API for comment reply.")
 
@@ -63,7 +63,7 @@ def get_club_world_cup_standings(comment) -> None:
             if fixture["result"] == "":
                 fixture_result = ""
             else:
-                fixture_result = f"**{fixture["result"]} {fixture["goalsHomeTeam"]}-{fixture["goalsAwayTeam"]}**"
+                fixture_result = f"**{fixture['result']} {fixture['goalsHomeTeam']}-{fixture['goalsAwayTeam']}**"
             comment_response += f"{format_date(fixture['date'], True, False)}|{fixture['isAway']}{fixture['opponent']}|{fixture_result}|{fixture['round']}\n"
 
     # Reply to comment.
@@ -90,9 +90,9 @@ def get_champions_league_standings(comment) -> None:
             comment_response += "|:-:|:--|:-:|:-:|:-:|\n"
             for team in table:
                 if team["team_id"] == config.FootballRapidApi.FOOTBALL_RAPID_API_INTER_CLUB_ID:
-                    comment_response += f"| **{team["rank"]}** | **{team["teamName"]}** | **{team["all"]["matchsPlayed"]}** | **{team["goalsDiff"]}** | **{team["points"]}** |\n"
+                    comment_response += f"| **{team['rank']}** | **{team['teamName']}** | **{team['all']['matchsPlayed']}** | **{team['goalsDiff']}** | **{team['points']}** |\n"
                 else:
-                    comment_response += f"| {team["rank"]} | {team["teamName"]} | {team["all"]["matchsPlayed"]} | {team["goalsDiff"]} | {team["points"]} |\n"
+                    comment_response += f"| {team['rank']} | {team['teamName']} | {team['all']['matchsPlayed']} | {team['goalsDiff']} | {team['points']} |\n"
     else:
         logger.warning("Failed to fetch Champions League group stages data from Rapid Football API for comment reply.")
 
@@ -119,7 +119,7 @@ def get_champions_league_standings(comment) -> None:
             if fixture["result"] == "":
                 fixture_result = ""
             else:
-                fixture_result = f"**{fixture["result"]} {fixture["goalsHomeTeam"]}-{fixture["goalsAwayTeam"]}**"
+                fixture_result = f"**{fixture['result']} {fixture['goalsHomeTeam']}-{fixture['goalsAwayTeam']}**"
             comment_response += f"{format_date(fixture['date'], True, False)}|{fixture['isAway']}{fixture['opponent']}|{fixture_result}|{fixture['round']}\n"
 
     # Reply to comment.
@@ -153,7 +153,7 @@ def getCoppaItaliaStandings(comment) -> None:
         if fixture["result"] == "":
             fixture_result = ""
         else:
-            fixture_result = f"**{fixture["result"]} {fixture["goalsHomeTeam"]}-{fixture["goalsAwayTeam"]}**"
+            fixture_result = f"**{fixture['result']} {fixture['goalsHomeTeam']}-{fixture['goalsAwayTeam']}**"
         comment_response += f"{format_date(fixture['date'], True, False)}|{fixture['isAway']}{fixture['opponent']}|{fixture_result}|{fixture['round']}\n"
 
     # Reply to comment.
@@ -178,10 +178,9 @@ def get_serie_a_standings(comment) -> None:
 
     for team in table:
         if team["team_id"] == config.FootballRapidApi.FOOTBALL_RAPID_API_INTER_CLUB_ID:
-            response += f"| **{team["rank"]}** | **{team["teamName"]}** | **{team["all"]["matchsPlayed"]}** | **{team["all"]["win"]}** | **{team["all"]["draw"]}** | **{team["all"]["lose"]}** | **{team["all"]["goalsFor"]}:{team["all"]["goalsAgainst"]}** | **{team["goalsDiff"]}** | **{team["points"]}** | **{team["forme"]}** |\n"
+            response += f"| **{team['rank']}** | **{team['teamName']}** | **{team['all']['matchsPlayed']}** | **{team['all']['win']}** | **{team['all']['draw']}** | **{team['all']['lose']}** | **{team['all']['goalsFor']}:{team['all']['goalsAgainst']}** | **{team['goalsDiff']}** | **{team['points']}** | **{team['forme']}** |\n"
         else:
-            response += f"| {team["rank"]} | {team["teamName"]} | {team["all"]["matchsPlayed"]} | {team["all"]["win"]} | {team["all"]["draw"]} | {team["all"]["lose"]} | {team["all"]["goalsFor"]}:{team["all"]["goalsAgainst"]} | {team["goalsDiff"]} | {team["points"]} | {team["forme"]} |\n"
-
+            response += f"| {team['rank']} | {team['teamName']} | {team['all']['matchsPlayed']} | {team['all']['win']} | {team['all']['draw']} | {team['all']['lose']} | {team['all']['goalsFor']}:{team['all']['goalsAgainst']} | {team['goalsDiff']} | {team['points']} | {team['forme']} |\n"
     # Reply to comment.
     logger.info(f"Replied with Serie A standings information to comment: {str(comment.author).lower()}")
     comment.reply(response)

@@ -173,26 +173,26 @@ def create_live_match_thread(reddit_instance, comment, next_match):
     # Prepare thread contents.
     submission_content = ""
     if next_game_info_json.get("status", "") == "Match Finished":
-        submission_content += f"# Full Time: {next_game_info_json.get("homeTeam", {}).get("team_name", "")} {next_game_info_json.get("goalsHomeTeam", "")}-{next_game_info_json.get("goalsAwayTeam", "")} {next_game_info_json.get("awayTeam", {}).get("team_name", "")}\n\n"
+        submission_content += f"# Full Time: {next_game_info_json.get('homeTeam', {}).get('team_name', '')} {next_game_info_json.get('goalsHomeTeam', '')}-{next_game_info_json.get('goalsAwayTeam', '')} {next_game_info_json.get('awayTeam', {}).get('team_name', '')}\n\n"
     elif next_game_info_json.get("status", "") == "Halftime":
-        submission_content += f"# Half Time: {next_game_info_json.get("homeTeam", {}).get("team_name", "")} {next_game_info_json.get("goalsHomeTeam", "")}-{next_game_info_json.get("goalsAwayTeam", "")} {next_game_info_json.get("awayTeam", {}).get("team_name", "")}\n\n"
+        submission_content += f"# Half Time: {next_game_info_json.get('homeTeam', {}).get('team_name', '')} {next_game_info_json.get('goalsHomeTeam', '')}-{next_game_info_json.get('goalsAwayTeam', '')} {next_game_info_json.get('awayTeam', {}).get('team_name', '')}\n\n"
     else:
-        submission_content += f"# {next_game_info_json.get("elapsed", "")}′: {next_game_info_json.get("homeTeam", {}).get("team_name", "")} {next_game_info_json.get("goalsHomeTeam", "")}-{next_game_info_json.get("goalsAwayTeam", "")} {next_game_info_json.get("awayTeam", {}).get("team_name", "")}\n\n"
+        submission_content += f"# {next_game_info_json.get('elapsed', '')}′: {next_game_info_json.get('homeTeam', {}).get('team_name', '')} {next_game_info_json.get('goalsHomeTeam', '')}-{next_game_info_json.get('goalsAwayTeam', '')} {next_game_info_json.get('awayTeam', {}).get('team_name', '')}\n\n"
     goals_home = ""
     goals_away = ""
     if next_game_info_json.get("events"):
         for event in next_game_info_json["events"]:
             if event.get("type", "") == "Goal" and event.get("team_id", "") == next_game_info_json["homeTeam"]["team_id"]:
-                goals_home += f" {event.get("player", "")} ({event.get("elapsed", "")}′)"
+                goals_home += f" {event.get('player', '')} ({event.get('elapsed', '')}′)"
             elif event.get("type", "") == "Goal" and event.get("team_id", "") == next_game_info_json["awayTeam"]["team_id"]:
-                goals_away += f" {event.get("player", "")} ({event.get("elapsed", "")}′)"
+                goals_away += f" {event.get('player', '')} ({event.get('elapsed', '')}′)"
     if goals_home:
-        submission_content += f" **{next_game_info_json.get("homeTeam", {}).get("team_name", "")}:** {goals_home}.\n\n"
+        submission_content += f" **{next_game_info_json.get('homeTeam', {}).get('team_name', '')}:** {goals_home}.\n\n"
     if goals_away:
-        submission_content += f" **{next_game_info_json.get("awayTeam", {}).get("team_name", "")}:** {goals_away}.\n\n"
+        submission_content += f" **{next_game_info_json.get('awayTeam', {}).get('team_name', '')}:** {goals_away}.\n\n"
     submission_content += "\n\n---\n\n"
     if next_game_info_json.get("venue"):
-        submission_content += f"**Venue:** {next_game_info_json["venue"]}\n\n"
+        submission_content += f"**Venue:** {next_game_info_json['venue']}\n\n"
     submission_content += "\n\n---\n\n"
     submission_content = submission_content.replace("None", "0")
 
@@ -238,11 +238,11 @@ def update_match_thread(reddit_instance):
     # Generate match thread content.
     submission_content = "\n\n---\n\n"
     if game_info_json.get("status", "") == "Match Finished":
-        submission_content += f"# Full Time: {game_info_json.get("homeTeam", {}).get("team_name", "")} {game_info_json.get("goalsHomeTeam", "")}-{game_info_json.get("goalsAwayTeam", "")} {game_info_json.get("awayTeam", {}).get("team_name", "")}\n\n"
+        submission_content += f"# Full Time: {game_info_json.get('homeTeam', {}).get('team_name', '')} {game_info_json.get('goalsHomeTeam', '')}-{game_info_json.get('goalsAwayTeam', '')} {game_info_json.get('awayTeam', {}).get('team_name', '')}\n\n"
     elif game_info_json.get("status", "") == "Halftime":
-        submission_content += f"# Half Time: {game_info_json.get("homeTeam", {}).get("team_name", "")} {game_info_json.get("goalsHomeTeam", "")}-{game_info_json.get("goalsAwayTeam", "")} {game_info_json.get("awayTeam", {}).get("team_name", "")}\n\n"
+        submission_content += f"# Half Time: {game_info_json.get('homeTeam', {}).get('team_name', '')} {game_info_json.get('goalsHomeTeam', '')}-{game_info_json.get('goalsAwayTeam', '')} {game_info_json.get('awayTeam', {}).get('team_name', '')}\n\n"
     else:
-        submission_content += f"# {game_info_json.get("elapsed", "")}′: {game_info_json.get("homeTeam", {}).get("team_name", "")} {game_info_json.get("goalsHomeTeam", "")}-{game_info_json.get("goalsAwayTeam", "")} {game_info_json.get("awayTeam", {}).get("team_name", "")}\n\n"
+        submission_content += f"# {game_info_json.get('elapsed', '')}′: {game_info_json.get('homeTeam', {}).get('team_name', '')} {game_info_json.get('goalsHomeTeam', '')}-{game_info_json.get('goalsAwayTeam', '')} {game_info_json.get('awayTeam', {}).get('team_name', '')}\n\n"
     goals_home = ""
     goals_away = ""
     if game_info_json.get("events"):
@@ -250,20 +250,20 @@ def update_match_thread(reddit_instance):
         for event in game_info_json["events"]:
             if event.get("type") == "Goal" and event.get("detail") != "Missed Penalty":
                 if event.get("team_id") == game_info_json["homeTeam"]["team_id"]:
-                    goals_home += f" {event.get("player")} ({event.get("elapsed")}′)"
+                    goals_home += f" {event.get('player')} ({event.get('elapsed')}′)"
                 elif event.get("team_id") == game_info_json["awayTeam"]["team_id"]:
-                    goals_away += f" {event.get("player")} ({event.get("elapsed")}′)"
+                    goals_away += f" {event.get('player')} ({event.get('elapsed')}′)"
     else:
         logger.warning("Live match thread: couldn't extract team goals, no 'events' information in JSON data.")
     if goals_home:
-        submission_content += f" **{game_info_json["homeTeam"]["team_name"]}:** {goals_home}.\n\n"
+        submission_content += f" **{game_info_json['homeTeam']['team_name']}:** {goals_home}.\n\n"
     if goals_away:
-        submission_content += f" **{game_info_json["awayTeam"]["team_name"]}:** {goals_away}.\n\n"
+        submission_content += f" **{game_info_json['awayTeam']['team_name']}:** {goals_away}.\n\n"
     submission_content += "\n\n---\n\n"
     if game_info_json.get("venue"):
-        submission_content += f"**Venue:** {game_info_json["venue"]}\n\n"
+        submission_content += f"**Venue:** {game_info_json['venue']}\n\n"
     if game_info_json.get("referee"):
-        submission_content += f"**Referee:** {game_info_json["referee"]}\n\n"
+        submission_content += f"**Referee:** {game_info_json['referee']}\n\n"
     try:
         if (game_info_json["lineups"] and game_info_json["lineups"].get(game_info_json["homeTeam"]["team_name"]) and game_info_json["lineups"][game_info_json["homeTeam"]["team_name"]].get("startXI")
                 and game_info_json["lineups"][game_info_json["homeTeam"]["team_name"]].get("substitutes") and game_info_json["lineups"].get(game_info_json["awayTeam"]["team_name"]) and game_info_json["lineups"][game_info_json["awayTeam"]["team_name"]].get("startXI")
@@ -274,18 +274,18 @@ def update_match_thread(reddit_instance):
             submission_content += "### Lineups\n\n"
             home_line_up["start"] = ", ".join(start["player"] for start in home_line_up["startXI"])
             home_line_up["subs"] = ", ".join(sub["player"] for sub in home_line_up["substitutes"])
-            submission_content += f"#### {game_info_json["homeTeam"]["team_name"]}\n\n"
-            submission_content += f" **Starting XI:** {home_line_up["start"]}\n\n"
-            submission_content += f" **Substitutes:** {home_line_up["subs"]}\n\n"
+            submission_content += f"#### {game_info_json['homeTeam']['team_name']}\n\n"
+            submission_content += f" **Starting XI:** {home_line_up['start']}\n\n"
+            submission_content += f" **Substitutes:** {home_line_up['subs']}\n\n"
             if home_line_up.get("coach"):
-                submission_content += f" **Coach:** {home_line_up["coach"]}\n\n"
+                submission_content += f" **Coach:** {home_line_up['coach']}\n\n"
             away_line_up["start"] = ", ".join(start["player"] for start in away_line_up["startXI"])
             away_line_up["subs"] = ", ".join(sub["player"] for sub in away_line_up["substitutes"])
-            submission_content += f"#### {game_info_json["awayTeam"]["team_name"]}\n\n"
-            submission_content += f" **Starting XI:** {away_line_up["start"]}\n\n"
-            submission_content += f" **Substitutes:** {away_line_up["subs"]}\n\n"
+            submission_content += f"#### {game_info_json['awayTeam']['team_name']}\n\n"
+            submission_content += f" **Starting XI:** {away_line_up['start']}\n\n"
+            submission_content += f" **Substitutes:** {away_line_up['subs']}\n\n"
             if away_line_up.get("coach"):
-                submission_content += f" **Coach:** {away_line_up["coach"]}\n\n"
+                submission_content += f" **Coach:** {away_line_up['coach']}\n\n"
         else:
             logger.warning("Live match thread: couldn't extract team lineups, no 'lineups' information in JSON data.")
     except KeyError:
@@ -299,17 +299,17 @@ def update_match_thread(reddit_instance):
         submission_content += "|:-:|:--|\n"
         for event in events:
             if event["type"] == "Goal" and event["detail"] == "Missed Penalty":
-                submission_content += f"| {event["elapsed"]}′ | ❌ **Missed Penalty ({event["teamName"]}):** {event["player"]}. |\n"
+                submission_content += f"| {event['elapsed']}′ | ❌ **Missed Penalty ({event['teamName']}):** {event['player']}. |\n"
             elif event["type"] == "Goal" and event["team_id"] == config.FootballRapidApi.FOOTBALL_RAPID_API_INTER_CLUB_ID:
-                submission_content += f"| {event["elapsed"]}′ | ⚽ **GOAAAAAAAL (Inter): {event["player"]}{"" if not event["assist"] else ", assist by " + event["assist"]}{"" if event["detail"] != "Penalty" else " (Penalty)"}. Forza Inter!** ⚫🔵 |\n"
+                submission_content += f"| {event['elapsed']}′ | ⚽ **GOAAAAAAAL (Inter): {event['player']}{'' if not event['assist'] else ', assist by ' + event['assist']}{'' if event['detail'] != 'Penalty' else ' (Penalty)'}. Forza Inter!** ⚫🔵 |\n"
             elif event["type"] == "Goal":
-                submission_content += f"| {event["elapsed"]}′ | ⚽ **Goal ({event["teamName"]}): {event["player"]}{"" if not event["assist"] else ", assist by " + event["assist"]}{"" if event["detail"] != "Penalty" else " (Penalty)"}.** |\n"
+                submission_content += f"| {event['elapsed']}′ | ⚽ **Goal ({event['teamName']}): {event['player']}{'' if not event['assist'] else ', assist by ' + event['assist']}{'' if event['detail'] != 'Penalty' else ' (Penalty)'}.** |\n"
             elif event["type"] == "Card" and event["detail"] == "Yellow Card":
-                submission_content += f"| {event["elapsed"]}′ | **🟨 Yellow card ({event["teamName"]}):** {event["player"]}. |\n"
+                submission_content += f"| {event['elapsed']}′ | **🟨 Yellow card ({event['teamName']}):** {event['player']}. |\n"
             elif event["type"] == "Card" and event["detail"] == "Red Card":
-                submission_content += f"| {event["elapsed"]}′ | **🟥 Red card ({event["teamName"]}):** {event["player"]}. |\n"
+                submission_content += f"| {event['elapsed']}′ | **🟥 Red card ({event['teamName']}):** {event['player']}. |\n"
             elif event["type"] == "subst":
-                submission_content += f"| {event["elapsed"]}′ | **🔄 Sub ({event["teamName"]}):** {event["player"]} replaces {event["assist"]}. |\n"
+                submission_content += f"| {event['elapsed']}′ | **🔄 Sub ({event['teamName']}):** {event['player']} replaces {event['assist']}. |\n"
     else:
         logger.warning("Live match thread: couldn't extract game events, no 'events' information in JSON data.")
 
@@ -317,38 +317,38 @@ def update_match_thread(reddit_instance):
         submission_content += "\n\n---\n\n"
         submission_content += "### Match Stats\n\n"
         stats = game_info_json["statistics"]
-        submission_content += f"| {game_info_json["homeTeam"]["team_name"]} |  | {game_info_json["awayTeam"]["team_name"]} |\n"
+        submission_content += f"| {game_info_json['homeTeam']['team_name']} |  | {game_info_json['awayTeam']['team_name']} |\n"
         submission_content += "|:-:|:-:|:-:|\n"
         if "Ball Possession" in stats:
-            submission_content += f"| {stats["Ball Possession"]["home"]} | Ball Possession | {stats["Ball Possession"]["away"]} |\n"
+            submission_content += f"| {stats['Ball Possession']['home']} | Ball Possession | {stats['Ball Possession']['away']} |\n"
         if "Total Shots" in stats:
-            submission_content += f"| {stats["Total Shots"]["home"]} | Total Shots | {stats["Total Shots"]["away"]} |\n"
+            submission_content += f"| {stats['Total Shots']['home']} | Total Shots | {stats['Total Shots']['away']} |\n"
         if "Shots on Goal" in stats:
-            submission_content += f"| {stats["Shots on Goal"]["home"]} | Shots On-Goal | {stats["Shots on Goal"]["away"]} |\n"
+            submission_content += f"| {stats['Shots on Goal']['home']} | Shots On-Goal | {stats['Shots on Goal']['away']} |\n"
         if "Shots off Goal" in stats:
-            submission_content += f"| {stats["Shots off Goal"]["home"]} | Shots Off-Goal | {stats["Shots off Goal"]["away"]} |\n"
+            submission_content += f"| {stats['Shots off Goal']['home']} | Shots Off-Goal | {stats['Shots off Goal']['away']} |\n"
         if "Blocked Shots" in stats:
-            submission_content += f"| {stats["Blocked Shots"]["home"]} | Blocked Shots | {stats["Blocked Shots"]["away"]} |\n"
+            submission_content += f"| {stats['Blocked Shots']['home']} | Blocked Shots | {stats['Blocked Shots']['away']} |\n"
         if "Shots insidebox" in stats:
-            submission_content += f"| {stats["Shots insidebox"]["home"]} | Shots Inside Box | {stats["Shots insidebox"]["away"]} |\n"
+            submission_content += f"| {stats['Shots insidebox']['home']} | Shots Inside Box | {stats['Shots insidebox']['away']} |\n"
         if "Shots outsidebox" in stats:
-            submission_content += f"| {stats["Shots outsidebox"]["home"]} | Shots Outside Box | {stats["Shots outsidebox"]["away"]} |\n"
+            submission_content += f"| {stats['Shots outsidebox']['home']} | Shots Outside Box | {stats['Shots outsidebox']['away']} |\n"
         if "Fouls" in stats:
-            submission_content += f"| {stats["Fouls"]["home"]} | Fouls | {stats["Fouls"]["away"]} |\n"
+            submission_content += f"| {stats['Fouls']['home']} | Fouls | {stats['Fouls']['away']} |\n"
         if "Corner Kicks" in stats:
-            submission_content += f"| {stats["Corner Kicks"]["home"]} | Corner Kicks | {stats["Corner Kicks"]["away"]} |\n"
+            submission_content += f"| {stats['Corner Kicks']['home']} | Corner Kicks | {stats['Corner Kicks']['away']} |\n"
         if "Offsides" in stats:
-            submission_content += f"| {stats["Offsides"]["home"]} | Offsides | {stats["Offsides"]["away"]} |\n"
+            submission_content += f"| {stats['Offsides']['home']} | Offsides | {stats['Offsides']['away']} |\n"
         if "Yellow Cards" in stats:
-            submission_content += f"| {stats["Yellow Cards"]["home"]} | Yellow Cards | {stats["Yellow Cards"]["away"]} |\n"
+            submission_content += f"| {stats['Yellow Cards']['home']} | Yellow Cards | {stats['Yellow Cards']['away']} |\n"
         if "Red Cards" in stats:
-            submission_content += f"| {stats["Red Cards"]["home"]} | Red Cards | {stats["Red Cards"]["away"]} |\n"
+            submission_content += f"| {stats['Red Cards']['home']} | Red Cards | {stats['Red Cards']['away']} |\n"
         if "Total passes" in stats:
-            submission_content += f"| {stats["Total passes"]["home"]} | Total passes | {stats["Total passes"]["away"]} |\n"
+            submission_content += f"| {stats['Total passes']['home']} | Total passes | {stats['Total passes']['away']} |\n"
         if "Passes accurate" in stats:
-            submission_content += f"| {stats["Passes accurate"]["home"]} | Accurate passes | {stats["Passes accurate"]["away"]} |\n"
+            submission_content += f"| {stats['Passes accurate']['home']} | Accurate passes | {stats['Passes accurate']['away']} |\n"
         if "Passes %" in stats:
-            submission_content += f"| {stats["Passes %"]["home"]} | Passing accuracy | {stats["Passes %"]["away"]} |\n"
+            submission_content += f"| {stats['Passes %']['home']} | Passing accuracy | {stats['Passes %']['away']} |\n"
     else:
         logger.warning("Live match thread: couldn't extract statistics, no 'statistics' information in JSON data.")
     submission_content += "\n\n---\n\n"
