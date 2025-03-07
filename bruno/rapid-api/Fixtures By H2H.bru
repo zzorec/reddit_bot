@@ -1,0 +1,16 @@
+meta {
+  name: Fixtures By H2H
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{base_url}}/v2/fixtures/h2h/:club1/:club2
+  body: none
+  auth: none
+}
+
+params:path {
+  club2: 209
+  club1: {{id_inter}}
+}

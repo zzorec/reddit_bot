@@ -1,0 +1,16 @@
+meta {
+  name: Fixtures By Team And League
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{base_url}}/v2/fixtures/team/:team_id/:league_id
+  body: none
+  auth: none
+}
+
+params:path {
+  league_id: {{id_cl}}
+  team_id: {{id_inter}}
+}

@@ -1,0 +1,16 @@
+meta {
+  name: Next X Fixtures By Team
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{base_url}}/v2/fixtures/team/:team_id/next/:num_of_games
+  body: none
+  auth: none
+}
+
+params:path {
+  num_of_games: 3
+  team_id: {{id_inter}}
+}

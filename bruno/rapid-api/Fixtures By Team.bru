@@ -1,0 +1,15 @@
+meta {
+  name: Fixtures By Team
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/v2/fixtures/team/:team_id
+  body: none
+  auth: none
+}
+
+params:path {
+  team_id: {{id_inter}}
+}

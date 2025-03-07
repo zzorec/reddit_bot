@@ -26,6 +26,8 @@ All the football data comes from RapidAPI api-football: https://rapidapi.com/api
 
 League and cup IDs are changed every season by Rapid API Football service and need to be updated in `config.py` for every season.
 
+`bruno` folder contains a Bruno collection for manually testing and researching all the Rapid API requests that are made by the bot. 
+
 > **How it runs**
 
 When bot is started, it will spin up 5 threads:
