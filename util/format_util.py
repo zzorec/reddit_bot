@@ -7,26 +7,26 @@ from reddit_bot.util.logging_util import logger
 
 def extract_cup_fixture(fixture: dict) -> dict:
     response = {
-        "isAway": "@" if fixture["homeTeam"]["team_id"] != config.FootballRapidApi.FOOTBALL_RAPID_API_INTER_CLUB_ID else "",
-        "opponent": fixture["awayTeam"]["team_name"] if fixture["homeTeam"]["team_id"] == config.FootballRapidApi.FOOTBALL_RAPID_API_INTER_CLUB_ID else fixture["homeTeam"]["team_name"],
-        "date": fixture["event_date"],
-        "goalsHomeTeam": fixture["goalsHomeTeam"],
-        "goalsAwayTeam": fixture["goalsAwayTeam"],
-        "round": "RO32" if fixture["round"] == "Round of 32" else "RO16" if fixture["round"] == "Round of 16" else "QF" if fixture["round"] == "Quarter-finals" else "SF" if fixture["round"] == "Semi-finals" else fixture["round"],
+        "isAway": "@" if fixture["teams"]["home"]["id"] != config.FootballRapidApi.FOOTBALL_RAPID_API_INTER_CLUB_ID else "",
+        "opponent": fixture["teams"]["away"]["name"] if fixture["teams"]["home"]["id"] == config.FootballRapidApi.FOOTBALL_RAPID_API_INTER_CLUB_ID else fixture["teams"]["home"]["name"],
+        "date": fixture["fixture"]["date"],
+        "goalsHomeTeam": fixture["goals"]["home"],
+        "goalsAwayTeam": fixture["goals"]["away"],
+        "round": "RO32" if fixture["league"]["round"] == "Round of 32" else "RO16" if fixture["league"]["round"] == "Round of 16" else "QF" if fixture["league"]["round"] == "Quarter-finals" else "SF" if fixture["league"]["round"] == "Semi-finals" else fixture["league"]["round"],
     }
-    if fixture["status"] not in ["Match Finished", "Match Abandoned", "Match Postponed"]:
+    if fixture["fixture"]["status"]["short"] not in ["FT", "AET", "PEN"]:
         response["result"] = ""
         return response
-    elif fixture["status"] in ["Match Abandoned", "Match Postponed"]:
+    elif fixture["fixture"]["status"]["short"] in ["AET", "PEN"]:
         response["result"] = "P-P"
         response["goalsHomeTeam"] = ""
         response["goalsAwayTeam"] = ""
-    elif fixture["status"] == "Match Finished":
-        if fixture["goalsHomeTeam"] == fixture["goalsAwayTeam"]:
+    elif fixture["fixture"]["status"]["short"] == "FT":
+        if fixture["goals"]["home"] == fixture["goals"]["away"]:
             response["result"] = "D"
-        elif fixture["homeTeam"]["team_id"] == config.FootballRapidApi.FOOTBALL_RAPID_API_INTER_CLUB_ID and fixture["goalsHomeTeam"] > fixture["goalsAwayTeam"]:
+        elif fixture["teams"]["home"]["id"] == config.FootballRapidApi.FOOTBALL_RAPID_API_INTER_CLUB_ID and fixture["goals"]["home"] > fixture["goals"]["away"]:
             response["result"] = "W"
-        elif fixture["awayTeam"]["team_id"] == config.FootballRapidApi.FOOTBALL_RAPID_API_INTER_CLUB_ID and fixture["goalsHomeTeam"] < fixture["goalsAwayTeam"]:
+        elif fixture["teams"]["away"]["id"] == config.FootballRapidApi.FOOTBALL_RAPID_API_INTER_CLUB_ID and fixture["goals"]["home"] < fixture["goals"]["away"]:
             response["result"] = "W"
         else:
             response["result"] = "L"
@@ -34,34 +34,39 @@ def extract_cup_fixture(fixture: dict) -> dict:
 
 
 def add_league_table(content: str, league_id: int, league_name: str) -> str:
-    league_url = f"{config.FootballRapidApi.FOOTBALL_RAPID_API_LEAGUE_TABLE_ENDPOINT}{league_id}"
+    league_url = config.FootballRapidApi.get_table_by_league_id_url(league_id)
     response = requests.get(league_url, headers=config.FootballRapidApi.FOOTBALL_RAPID_API_HEADERS)
     logger.info(f"Football Rapid API: Fetched league table for: {league_name}.")
     if response.status_code == 200:
-        standings = response.json().get("api", {}).get("standings", [])
-        if standings:
-            table = standings[0]
-            content += f"\n### {league_name}\n"
-            content += "| # | Team | PL | GD | Pts |\n"
-            content += "|:-:|:--|:-:|:-:|:-:|\n"
-            for team in table:
-                team_info = f"| {team['rank']} | {team['teamName']} | {team['all']['matchsPlayed']} | {team['goalsDiff']} | {team['points']} |\n"
-                if team["team_id"] == config.FootballRapidApi.FOOTBALL_RAPID_API_INTER_CLUB_ID:
-                    team_info = f"| **{team['rank']}** | **{team['teamName']}** | **{team['all']['matchsPlayed']}** | **{team['goalsDiff']}** | **{team['points']}** |\n"
-                content += team_info
+        response_json = response.json()
+        response_data = response_json.get("response", [])
+        if response_data:
+            standings = response_data[0].get("league", {}).get("standings", [])
+            if standings:
+                table = standings[0]  # Assuming the first element is the main standings table
+                content += f"\n### {league_name}\n"
+                content += "| # | Team | PL | GD | Pts |\n"
+                content += "|:-:|:--|:-:|:-:|:-:|\n"
+                for team in table:
+                    team_info = f"| {team['rank']} | {team['team']['name']} | {team['all']['played']} | {team['goalsDiff']} | {team['points']} |\n"
+                    if team["team"]["id"] == config.FootballRapidApi.FOOTBALL_RAPID_API_INTER_CLUB_ID:
+                        team_info = f"| **{team['rank']}** | **{team['team']['name']}** | **{team['all']['played']}** | **{team['goalsDiff']}** | **{team['points']}** |\n"
+                    content += team_info
+            else:
+                logger.warning(f"No standings data available for {league_name}.")
         else:
-            logger.warning(f"No standings data available for {league_name}.")
+            logger.warning(f"No response data available for {league_name}.")
     else:
         logger.warning(f"Failed to fetch {league_name} data from Rapid Football API.")
     return content
 
 
 def add_knockout_stages(content: str, competition_id: int, competition_name: str) -> str:
-    knockout_url = f"{config.FootballRapidApi.FOOTBALL_RAPID_API_TEAM_FIXTURES_ENDPOINT}{config.FootballRapidApi.FOOTBALL_RAPID_API_INTER_CLUB_ID}/{competition_id}"
+    knockout_url = config.FootballRapidApi.get_fixtures_by_league_id_url(competition_id)
     response = requests.get(knockout_url, headers=config.FootballRapidApi.FOOTBALL_RAPID_API_HEADERS)
     logger.info(f"Football Rapid API: Fetched {competition_name} KO fixtures.")
     if response.status_code == 200:
-        fixtures = response.json().get("api", {}).get("fixtures", [])
+        fixtures = response.json().get("response", [])
         fixtures_info = [extract_cup_fixture(fixture) for fixture in fixtures]
         ko_fixtures = ""
         for fixture in fixtures_info:

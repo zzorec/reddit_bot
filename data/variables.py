@@ -9,7 +9,7 @@ class MatchThreadVariables:
     live_match_thread_created: bool = False
 
     # Football Rapid API's ID of live match that is in progress. This will be set once the game starts and unset when the game is done.
-    live_match_football_api_id: str = ""
+    live_match_football_api_id: int = None
 
     # Reddit ID of live match thread that is in progress. This will be set once the match thread is created and unset when post-match discussion thread is created.
     live_match_reddit_submission_id: str = ""

@@ -31,12 +31,12 @@ def update_sidebar(reddit_instance) -> None:
     sidebar_content = resources.Sidebar.ABOUT
 
     # Get last 3 fixtures
-    url_last_fixtures = f"{config.FootballRapidApi.FOOTBALL_RAPID_API_TEAM_FIXTURES_ENDPOINT}{config.FootballRapidApi.FOOTBALL_RAPID_API_INTER_CLUB_ID}/last/3"
+    url_last_fixtures = config.FootballRapidApi.get_last_team_fixtures_url(3)
     response_last_fixtures = requests.get(url_last_fixtures, headers=config.FootballRapidApi.FOOTBALL_RAPID_API_HEADERS)
     logger.info("Football Rapid API: Fetched last 3 fixtures for sidebar.")
     if response_last_fixtures.status_code == 200:
         response_last_fixtures_json = response_last_fixtures.json()
-        last_fixtures = response_last_fixtures_json.get("api", {}).get("fixtures", [])
+        last_fixtures = response_last_fixtures_json.get("response", [])
         last_fixtures.reverse()
         sidebar_content += "\n### Fixtures\n\n"
         sidebar_content += "**Date**|**Opponent**|**Result**|**Comp**|\n"
@@ -46,15 +46,15 @@ def update_sidebar(reddit_instance) -> None:
             if match_data["result"] == "P-P":
                 sidebar_content += f"{match_data['date']}|{match_data['isAway']}{match_data['opponent']}|{match_data['result']}|{match_data['league']}\n"
             else:
-                sidebar_content += f"{match_data['date']}|{match_data['isAway']}{match_data['opponent']}|{match_data['result']} {last_fixtures[i]['goalsHomeTeam']}-{last_fixtures[i]['goalsAwayTeam']}|{match_data['league']}\n"
+                sidebar_content += f"{match_data['date']}|{match_data['isAway']}{match_data['opponent']}|{match_data['result']} {last_fixtures[i]['goals']['home']}-{last_fixtures[i]['goals']['away']}|{match_data['league']}\n"
 
         # Get next 3 fixtures
-        url_next_fixtures = f"{config.FootballRapidApi.FOOTBALL_RAPID_API_TEAM_FIXTURES_ENDPOINT}{config.FootballRapidApi.FOOTBALL_RAPID_API_INTER_CLUB_ID}/next/3"
+        url_next_fixtures = config.FootballRapidApi.get_next_team_fixtures_url(3)
         response_next_fixtures = requests.get(url_next_fixtures, headers=config.FootballRapidApi.FOOTBALL_RAPID_API_HEADERS)
         logger.info("Football Rapid API: Fetched next 3 fixtures for sidebar.")
         if response_next_fixtures.status_code == 200:
             response_next_fixtures_json = response_next_fixtures.json()
-            next_fixtures = response_next_fixtures_json.get("api", {}).get("fixtures", [])
+            next_fixtures = response_next_fixtures_json.get("response", [])
             for i in range(len(next_fixtures)):
                 match_data = format_match(next_fixtures[i])
                 sidebar_content += f"{match_data['date']}|{match_data['isAway']}{match_data['opponent']}||{match_data['league']}\n"
@@ -96,10 +96,10 @@ def update_sidebar(reddit_instance) -> None:
 
 def format_match(match: dict) -> dict:
     response = {
-        "isAway": "@" if match["homeTeam"]["team_id"] != config.FootballRapidApi.FOOTBALL_RAPID_API_INTER_CLUB_ID else "",
+        "isAway": "@" if match["teams"]["home"]["id"] != config.FootballRapidApi.FOOTBALL_RAPID_API_INTER_CLUB_ID else "",
         "result": "",
-        "date": format_date(match["event_date"], True, False),
-        "opponent": match["awayTeam"]["team_name"] if match["homeTeam"]["team_id"] == config.FootballRapidApi.FOOTBALL_RAPID_API_INTER_CLUB_ID else match["homeTeam"]["team_name"],
+        "date": format_date(match["fixture"]["date"], True, False),
+        "opponent": match["teams"]["away"]["name"] if match["teams"]["home"]["id"] == config.FootballRapidApi.FOOTBALL_RAPID_API_INTER_CLUB_ID else match["teams"]["home"]["name"],
         "league": "Serie A" if match["league"]["name"] == "Serie A" else
         "CL" if match["league"]["name"] == "UEFA Champions League" else
         "EL" if match["league"]["name"] == "UEFA Europa League" else
@@ -108,16 +108,16 @@ def format_match(match: dict) -> dict:
         "Friendly" if match["league"]["name"] == "Friendlies Clubs" else
         match["league"]["name"]
     }
-    if match["status"] not in ["Match Finished", "Match Abandoned", "Match Postponed"]:
+    if match["fixture"]["status"]["short"] not in ["FT", "AET", "PEN"]:
         return response
-    elif match["status"] in ["Match Abandoned", "Match Postponed"]:
+    elif match["fixture"]["status"]["short"] in ["AET", "PEN"]:
         response["result"] = "P-P"
-    elif match["status"] == "Match Finished":
-        if match["goalsHomeTeam"] == match["goalsAwayTeam"]:
+    elif match["fixture"]["status"]["short"] == "FT":
+        if match["goals"]["home"] == match["goals"]["away"]:
             response["result"] = "D"
-        elif match["homeTeam"]["team_id"] == config.FootballRapidApi.FOOTBALL_RAPID_API_INTER_CLUB_ID and match["goalsHomeTeam"] > match["goalsAwayTeam"]:
+        elif match["teams"]["home"]["id"] == config.FootballRapidApi.FOOTBALL_RAPID_API_INTER_CLUB_ID and match["goals"]["home"] > match["goals"]["away"]:
             response["result"] = "W"
-        elif match["awayTeam"]["team_id"] == config.FootballRapidApi.FOOTBALL_RAPID_API_INTER_CLUB_ID and match["goalsHomeTeam"] < match["goalsAwayTeam"]:
+        elif match["teams"]["away"]["id"] == config.FootballRapidApi.FOOTBALL_RAPID_API_INTER_CLUB_ID and match["goals"]["home"] < match["goals"]["away"]:
             response["result"] = "W"
         else:
             response["result"] = "L"

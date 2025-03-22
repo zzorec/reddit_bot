@@ -18,15 +18,17 @@ These can be set as operating system environment variables or in a `.env` file i
 
 > **Reddit API**
 
-Interaction with Reddit API is done with praw library: https://praw.readthedocs.io/
+Interaction with Reddit API is done with praw library: https://praw.readthedocs.io/.
+
+Reddit's configuration can be found in `config.py`.
 
 > **Football data**
 
 All the football data comes from RapidAPI api-football: https://rapidapi.com/api-sports/api/api-football.
 
-League and cup IDs are changed every season by Rapid API Football service and need to be updated in `config.py` for every season.
+Football Rapid API's configuration can be found in `config.py`.
 
-`bruno` folder contains a Bruno collection for manually testing and researching all the Rapid API requests that are made by the bot. 
+`bruno` folder contains a Bruno collection for manually testing and researching all the Rapid API requests that are made by the bot.
 
 > **How it runs**
 
@@ -53,4 +55,4 @@ Flairs are assigned to submissions based on flair ID in order for the correct st
 
 ### Hosting
 
-Bot is running on a Google Cloud VM environment for 24/7 availability on Debian Linux. It's being run as a systemd service, so it can be started, stopped, and restarted with `systemctl` commands.
+Example Bot setup: Run it on a Google Cloud VM Linux environment as a systemd service. Make sure that Python and required Python packages are installed.

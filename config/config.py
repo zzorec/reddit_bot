@@ -3,19 +3,20 @@ from typing import Final
 
 from dotenv import load_dotenv
 
+from reddit_bot.util.date_util import get_active_season
+
 load_dotenv()
 
 
 class FootballRapidApi:
-    # IDs for leagues and cups change need to be changed every season - next time for season 2025/26.
-    FOOTBALL_RAPID_API_INTER_CLUB_ID: Final[int] = 505  # This ID doesn't change.
-    FOOTBALL_RAPID_API_SERIE_A_ID: Final[int] = 6374
-    FOOTBALL_RAPID_API_CHAMPIONS_LEAGUE_ID: Final[int] = 6281
-    FOOTBALL_RAPID_API_EUROPA_LEAGUE_ID: Final[int] = 6283
-    FOOTBALL_RAPID_API_CONFERENCE_LEAGUE_ID: Final[int] = 6282
-    FOOTBALL_RAPID_API_COPPA_ITALIA_ID: Final[int] = 6421
-    FOOTBALL_RAPID_API_SUPERCOPPA_ID: Final[int] = 6825
-    FOOTBALL_RAPID_API_CLUB_WORLD_CUP_ID: Final[int] = 6922
+    FOOTBALL_RAPID_API_INTER_CLUB_ID: Final[int] = 505
+    FOOTBALL_RAPID_API_SERIE_A_ID: Final[int] = 135
+    FOOTBALL_RAPID_API_CHAMPIONS_LEAGUE_ID: Final[int] = 2
+    FOOTBALL_RAPID_API_EUROPA_LEAGUE_ID: Final[int] = 3
+    FOOTBALL_RAPID_API_CONFERENCE_LEAGUE_ID: Final[int] = 848
+    FOOTBALL_RAPID_API_COPPA_ITALIA_ID: Final[int] = 137
+    FOOTBALL_RAPID_API_SUPERCOPPA_ID: Final[int] = 547
+    FOOTBALL_RAPID_API_CLUB_WORLD_CUP_ID: Final[int] = 15
 
     FOOTBALL_RAPID_API_HEADERS: Final[dict[str, str]] = {
         "x-rapidapi-host": "api-football-v1.p.rapidapi.com",
@@ -23,11 +24,41 @@ class FootballRapidApi:
     }
 
     FOOTBALL_RAPID_API_BASE_ENDPOINT: Final[str] = "https://api-football-v1.p.rapidapi.com"
-    FOOTBALL_RAPID_API_TEAM_FIXTURES_ENDPOINT: Final[str] = FOOTBALL_RAPID_API_BASE_ENDPOINT + "/v2/fixtures/team/"
-    FOOTBALL_RAPID_API_LEAGUE_TABLE_ENDPOINT: Final[str] = FOOTBALL_RAPID_API_BASE_ENDPOINT + "/v2/leagueTable/"
-    FOOTBALL_RAPID_API_INJURIES_WITH_FIXTURE_ENDPOINT: Final[str] = FOOTBALL_RAPID_API_BASE_ENDPOINT + "/v3/injuries?fixture={}"
-    FOOTBALL_RAPID_API_H2H_ENDPOINT: Final[str] = FOOTBALL_RAPID_API_BASE_ENDPOINT + "/v2/fixtures/h2h/"
-    FOOTBALL_RAPID_API_FIXTURES_ENDPOINT: Final[str] = FOOTBALL_RAPID_API_BASE_ENDPOINT + "/v2/fixtures/id/"
+    FOOTBALL_RAPID_API_V3_FIXTURES_ENDPOINT: Final[str] = FOOTBALL_RAPID_API_BASE_ENDPOINT + "/v3/fixtures?league={}&season={}&team={}"
+    FOOTBALL_RAPID_API_V3_NEXT_TEAM_FIXTURES_ENDPOINT: Final[str] = FOOTBALL_RAPID_API_BASE_ENDPOINT + "/v3/fixtures?team={}&next={}"
+    FOOTBALL_RAPID_API_V3_LAST_TEAM_FIXTURES_ENDPOINT: Final[str] = FOOTBALL_RAPID_API_BASE_ENDPOINT + "/v3/fixtures?team={}&last={}"
+    FOOTBALL_RAPID_API_V3_INJURIES_ENDPOINT: Final[str] = FOOTBALL_RAPID_API_BASE_ENDPOINT + "/v3/injuries?fixture={}"
+    FOOTBALL_RAPID_API_V3_LEAGUE_TABLE_ENDPOINT: Final[str] = FOOTBALL_RAPID_API_BASE_ENDPOINT + "/v3/standings?league={}&season={}"
+    FOOTBALL_RAPID_API_V3_H2H_ENDPOINT: Final[str] = FOOTBALL_RAPID_API_BASE_ENDPOINT + "/v3/fixtures/headtohead?h2h={}-{}"
+    FOOTBALL_RAPID_API_V3_FIXTURE_BY_ID_ENDPOINT: Final[str] = FOOTBALL_RAPID_API_BASE_ENDPOINT + "/v3/fixtures?id={}"
+
+    @staticmethod
+    def get_fixtures_by_league_id_url(league_id: int) -> str:
+        return FootballRapidApi.FOOTBALL_RAPID_API_V3_FIXTURES_ENDPOINT.format(league_id, get_active_season(), FootballRapidApi.FOOTBALL_RAPID_API_INTER_CLUB_ID)
+
+    @staticmethod
+    def get_next_team_fixtures_url(next_matches: int) -> str:
+        return FootballRapidApi.FOOTBALL_RAPID_API_V3_NEXT_TEAM_FIXTURES_ENDPOINT.format(FootballRapidApi.FOOTBALL_RAPID_API_INTER_CLUB_ID, next_matches)
+
+    @staticmethod
+    def get_last_team_fixtures_url(last_matches: int) -> str:
+        return FootballRapidApi.FOOTBALL_RAPID_API_V3_LAST_TEAM_FIXTURES_ENDPOINT.format(FootballRapidApi.FOOTBALL_RAPID_API_INTER_CLUB_ID, last_matches)
+
+    @staticmethod
+    def get_injuries_by_fixture_id_url(fixture_id: int) -> str:
+        return FootballRapidApi.FOOTBALL_RAPID_API_V3_INJURIES_ENDPOINT.format(fixture_id)
+
+    @staticmethod
+    def get_table_by_league_id_url(league_id: int) -> str:
+        return FootballRapidApi.FOOTBALL_RAPID_API_V3_LEAGUE_TABLE_ENDPOINT.format(league_id, get_active_season())
+
+    @staticmethod
+    def get_h2h_by_team_id_url(home_team: int, away_team: int) -> str:
+        return FootballRapidApi.FOOTBALL_RAPID_API_V3_H2H_ENDPOINT.format(home_team, away_team)
+
+    @staticmethod
+    def get_fixture_by_id_url(fixture_id: int) -> str:
+        return FootballRapidApi.FOOTBALL_RAPID_API_V3_FIXTURE_BY_ID_ENDPOINT.format(fixture_id)
 
 
 class Reddit:
