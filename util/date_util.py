@@ -26,5 +26,12 @@ def format_time(time_value) -> str:
     return date.strftime("%H:%M")
 
 
+# Used for sending the active season information to the API.
+def get_active_season(current_date=None):
+    if current_date is None:
+        current_date = datetime.today()
+    return current_date.year - 1 if current_date.month <= 7 else current_date.year
+
+
 if __name__ == "__main__":
     pass

@@ -1,6 +1,7 @@
 import unittest
+from datetime import date
 
-from reddit_bot.util.date_util import format_time, format_date
+from reddit_bot.util.date_util import format_time, format_date, get_active_season
 
 
 class TestFormattingUtil(unittest.TestCase):
@@ -32,6 +33,11 @@ class TestFormattingUtil(unittest.TestCase):
         # Test formatting time.
         expected_output = "12:00"
         self.assertEqual(format_time(self.date_string), expected_output)
+
+    def test_active_season(self):
+        self.assertEqual(get_active_season(date(2024, 10, 31)), 2024)
+        self.assertEqual(get_active_season(date(2025, 3, 31)), 2024)
+        self.assertEqual(get_active_season(date(2025, 10, 31)), 2025)
 
 
 if __name__ == "__main__":
