@@ -14,14 +14,14 @@ def extract_cup_fixture(fixture: dict) -> dict:
         "goalsAwayTeam": fixture["goals"]["away"],
         "round": "RO32" if fixture["league"]["round"] == "Round of 32" else "RO16" if fixture["league"]["round"] == "Round of 16" else "QF" if fixture["league"]["round"] == "Quarter-finals" else "SF" if fixture["league"]["round"] == "Semi-finals" else fixture["league"]["round"],
     }
-    if fixture["fixture"]["status"]["short"] not in ["FT", "AET", "PEN"]:
+    if fixture["fixture"]["status"]["short"] not in ["FT", "AET", "PEN", "ABD", "PST", "SUSP", "CANC"]:
         response["result"] = ""
         return response
-    elif fixture["fixture"]["status"]["short"] in ["AET", "PEN"]:
+    elif fixture["fixture"]["status"]["short"] in ["ABD", "PST", "SUSP"]:
         response["result"] = "P-P"
         response["goalsHomeTeam"] = ""
         response["goalsAwayTeam"] = ""
-    elif fixture["fixture"]["status"]["short"] == "FT":
+    elif fixture["fixture"]["status"]["short"] in ["FT", "AET", "PEN"]:
         if fixture["goals"]["home"] == fixture["goals"]["away"]:
             response["result"] = "D"
         elif fixture["teams"]["home"]["id"] == config.FootballRapidApi.FOOTBALL_RAPID_API_INTER_CLUB_ID and fixture["goals"]["home"] > fixture["goals"]["away"]:

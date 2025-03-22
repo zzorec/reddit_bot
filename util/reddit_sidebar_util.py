@@ -108,11 +108,11 @@ def format_match(match: dict) -> dict:
         "Friendly" if match["league"]["name"] == "Friendlies Clubs" else
         match["league"]["name"]
     }
-    if match["fixture"]["status"]["short"] not in ["FT", "AET", "PEN"]:
+    if match["fixture"]["status"]["short"] not in ["FT", "AET", "PEN", "ABD", "PST", "SUSP", "CANC"]:
         return response
-    elif match["fixture"]["status"]["short"] in ["AET", "PEN"]:
+    elif match["fixture"]["status"]["short"] in ["ABD", "PST", "SUSP", "CANC"]:
         response["result"] = "P-P"
-    elif match["fixture"]["status"]["short"] == "FT":
+    elif match["fixture"]["status"]["short"] in ["FT", "AET", "PEN"]:
         if match["goals"]["home"] == match["goals"]["away"]:
             response["result"] = "D"
         elif match["teams"]["home"]["id"] == config.FootballRapidApi.FOOTBALL_RAPID_API_INTER_CLUB_ID and match["goals"]["home"] > match["goals"]["away"]:

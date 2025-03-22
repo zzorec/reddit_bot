@@ -133,7 +133,7 @@ def create_pre_match_thread(reddit_instance, comment, next_match) -> None:
         submission_content += "|:-:|:-:|:-:|:-:|\n"
         submission_content += f"| {total_played} | {home_wins} | {draws} | {away_wins} |\n"
 
-        filtered_fixtures = [match for match in h2h_data_fixtures if match["fixture"]["status"]["short"] == "FT"]
+        filtered_fixtures = [match for match in h2h_data_fixtures if match["fixture"]["status"]["short"] in ["FT", "AET", "PEN"]]
         sorted_fixtures = sorted(filtered_fixtures, key=lambda match: match["fixture"]["timestamp"], reverse=True)
 
         if sorted_fixtures:
@@ -194,9 +194,9 @@ def create_live_match_thread(reddit_instance, comment, next_match):
 
     # Prepare thread contents.
     submission_content = ""
-    if next_game_info_json["fixture"]["status"]["long"] == "Match Finished":
+    if next_game_info_json["fixture"]["status"]["short"] in ["FT", "AET", "PEN"]:
         submission_content += f"# Full Time: {next_game_info_json['teams']['home']['name']} {next_game_info_json['goals']['home']}-{next_game_info_json['goals']['away']} {next_game_info_json['teams']['away']['name']}\n\n"
-    elif next_game_info_json["fixture"]["status"]["long"] == "Halftime":
+    elif next_game_info_json["fixture"]["status"]["short"] == "HT":
         submission_content += f"# Half Time: {next_game_info_json['teams']['home']['name']} {next_game_info_json['goals']['home']}-{next_game_info_json['goals']['away']} {next_game_info_json['teams']['away']['name']}\n\n"
     else:
         submission_content += f"# {next_game_info_json['fixture']['status']['elapsed']}′: {next_game_info_json['teams']['home']['name']} {next_game_info_json['goals']['home']}-{next_game_info_json['goals']['away']} {next_game_info_json['teams']['away']['name']}\n\n"
@@ -262,9 +262,9 @@ def update_match_thread(reddit_instance):
 
     # Generate match thread content.
     submission_content = "\n\n---\n\n"
-    if game_info_json["fixture"]["status"]["long"] == "Match Finished":
+    if game_info_json["fixture"]["status"]["short"] in ["FT", "AET", "PEN"]:
         submission_content += f"# Full Time: {game_info_json['teams']['home']['name']} {game_info_json['goals']['home']}-{game_info_json['goals']['away']} {game_info_json['teams']['away']['name']}\n\n"
-    elif game_info_json["fixture"]["status"]["long"] == "Halftime":
+    elif game_info_json["fixture"]["status"]["short"] == "HT":
         submission_content += f"# Half Time: {game_info_json['teams']['home']['name']} {game_info_json['goals']['home']}-{game_info_json['goals']['away']} {game_info_json['teams']['away']['name']}\n\n"
     else:
         submission_content += f"# {game_info_json['fixture']['status']['elapsed']}′: {game_info_json['teams']['home']['name']} {game_info_json['goals']['home']}-{game_info_json['goals']['away']} {game_info_json['teams']['away']['name']}\n\n"
@@ -386,7 +386,7 @@ def update_match_thread(reddit_instance):
     logger.info("Updated live match thread for match ID: " + str(variables.MatchThreadVariables.live_match_football_api_id))
 
     # When game is done, create the post-match discussion thread.
-    if game_info_json["fixture"]["status"]["long"] == "Match Finished":
+    if game_info_json["fixture"]["status"]["short"] in ["FT", "AET", "PEN"]:
         # Set post-match discussion thread title and content
         variables.MatchThreadVariables.post_match_thread_title = "[Post-Match Discussion Thread] " + game_info_json["teams"]["home"]["name"] + " " + str(game_info_json["goals"]["home"]) + ":" + str(game_info_json["goals"]["away"]) + " " + game_info_json["teams"]["away"][
             "name"] + " (" + game_info_json["league"]["name"] + ", " + str(game_info_json["league"]["round"]).replace("Regular Season -", "Matchday") + ")"
