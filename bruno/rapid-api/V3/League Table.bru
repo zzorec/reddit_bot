@@ -1,0 +1,16 @@
+meta {
+  name: League Table
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{base_url}}/v3/standings?league={{id_seriea}}&season={{season}}
+  body: none
+  auth: none
+}
+
+params:query {
+  league: {{id_seriea}}
+  season: {{season}}
+}

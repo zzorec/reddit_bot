@@ -1,0 +1,16 @@
+meta {
+  name: Last X Fixtures By Team
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{base_url}}/v3/fixtures?team={{id_inter}}&last=3
+  body: none
+  auth: none
+}
+
+params:query {
+  team: {{id_inter}}
+  last: 3
+}

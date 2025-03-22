@@ -1,0 +1,17 @@
+meta {
+  name: Fixtures By Team, League And Season
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{base_url}}/v3/fixtures?league={{id_seriea}}&season={{season}}&team={{id_inter}}
+  body: none
+  auth: none
+}
+
+params:query {
+  league: {{id_seriea}}
+  season: {{season}}
+  team: {{id_inter}}
+}

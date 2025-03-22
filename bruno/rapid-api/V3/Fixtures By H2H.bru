@@ -1,0 +1,15 @@
+meta {
+  name: Fixtures By H2H
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{base_url}}/v3/fixtures/headtohead?h2h={{id_opponent_example}}-{{id_inter}}
+  body: none
+  auth: none
+}
+
+params:query {
+  h2h: {{id_opponent_example}}-{{id_inter}}
+}
