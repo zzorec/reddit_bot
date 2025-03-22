@@ -26,7 +26,6 @@ def get_club_world_cup_standings(comment) -> None:
     if cwc_response.status_code == 200:
         cwc_response_json = cwc_response.json()
         if cwc_response_json["response"]:
-            # Access the standings from the new JSON structure
             table = cwc_response_json["response"][0]["league"]["standings"][0]
             comment_response += "\n 🏆 **Club World Cup** 🏆\n\n"
             comment_response += "\n### Group stage\n"
@@ -83,7 +82,6 @@ def get_champions_league_standings(comment) -> None:
     if cl_response.status_code == 200:
         cl_response_json = cl_response.json()
         if cl_response_json["response"]:
-            # Access the standings from the new JSON structure
             table = cl_response_json["response"][0]["league"]["standings"][0]
             comment_response += "\n 🏆 **Champions League** 🏆\n\n"
             comment_response += "\n### Group stage\n"
@@ -170,7 +168,6 @@ def get_serie_a_standings(comment) -> None:
     logger.info(f"Football Rapid API: Fetched league table for: {config.FootballRapidApi.FOOTBALL_RAPID_API_SERIE_A_ID} (comment command).")
     response_json = requests.get(request_url, headers=config.FootballRapidApi.FOOTBALL_RAPID_API_HEADERS).json()
 
-    # Access the standings data in the new JSON structure
     table = response_json["response"][0]["league"]["standings"][0]
 
     # Build response comment - Reddit table.
