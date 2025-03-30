@@ -1,5 +1,7 @@
+import re
 import time
 from datetime import timedelta, datetime
+from typing import Final
 
 import pytz
 import requests
@@ -243,51 +245,38 @@ def match_threads_updater(reddit_instance):
 
 
 def update_match_thread(reddit_instance):
-    # Helper function to safely get any name with consistent handling
-    def get_safe_name_str(name, default="Unknown"):
+    def get_safe_name_str(name, default="Unknown"):  # Helper function to safely get any name with consistent handling
+        MOJIBAKE_MAP: Final[dict[str, str]] = {
+            'Ã‡': 'Ç', 'Ã§': 'ç', 'Ã¼': 'ü', 'Ã¤': 'ä', 'Ã¶': 'ö', 'ÃŸ': 'ß',
+            'Ã©': 'é', 'Ã¨': 'è', 'Ãª': 'ê', 'Ã«': 'ë', 'Ã¡': 'á', 'Ã ': 'à',
+            'Ã¢': 'â', 'Ã£': 'ã', 'Ã±': 'ñ', 'Ã³': 'ó', 'Ã²': 'ò', 'Ã´': 'ô',
+            'Ãµ': 'õ', 'Ã¸': 'ø', 'Ã¥': 'å', 'Ã‰': 'É', 'Ãœ': 'Ü', 'Ã–': 'Ö',
+            'Ã„': 'Ä', 'â€™': "'", 'â€“': '-', 'Ã®': 'î', 'Ã¯': 'ï', 'Ã¬': 'ì',
+            'Ã­': 'í', 'Ã¿': 'ÿ', 'Ã½': 'ý', 'Å¡': 'š', 'Å¾': 'ž', 'Ä‡': 'ć',
+            'Å‚': 'ł', 'Ä™': 'ę', 'Å„': 'ń', 'Åº': 'ź', 'Ä…': 'ą', 'Ä': 'č',
+            'Å¥': 'ť', 'ÄŸ': 'ğ', 'Ä±': 'ı', 'ÅŸ': 'ş'
+        }
+        MOJIBAKE_REGEX: Final[re.Pattern] = re.compile('|'.join(map(re.escape, MOJIBAKE_MAP)))
+        MOJIBAKE_MARKERS: Final[tuple[str, ...]] = ('Ã', 'Â', 'Ä')
+
         if name is None or name == "null":
             return default
-
-        if not isinstance(name, str):
-            if isinstance(name, bytes):
-                name = name.decode('utf-8', errors='replace')
-            else:
-                name = str(name)
-
-        # Common mojibake patterns and their corrections
-        mojibake_map = {
-            'Ã‡': 'Ç', 'Ã§': 'ç',
-            'Ã¼': 'ü', 'Ã¤': 'ä', 'Ã¶': 'ö', 'ÃŸ': 'ß',
-            'Ã©': 'é', 'Ã¨': 'è', 'Ãª': 'ê', 'Ã«': 'ë',
-            'Ã¡': 'á', 'Ã ': 'à', 'Ã¢': 'â', 'Ã£': 'ã',
-            'Ã±': 'ñ', 'Ã³': 'ó', 'Ã²': 'ò', 'Ã´': 'ô',
-            'Ãµ': 'õ', 'Ã¸': 'ø', 'Ã¥': 'å',
-            'Ã‰': 'É', 'Ãœ': 'Ü', 'Ã–': 'Ö', 'Ã„': 'Ä',
-            'â€™': "'", 'â€“': '-', 'Ã®': 'î', 'Ã¯': 'ï',
-            'Ã¬': 'ì', 'Ã­': 'í', 'Ã¿': 'ÿ', 'Ã½': 'ý',
-            'Å¡': 'š', 'Å¾': 'ž', 'Ä‡': 'ć', 'Å‚': 'ł',
-            'Ä™': 'ę', 'Å„': 'ń', 'Åº': 'ź', 'Ä…': 'ą',
-            'Ä': 'č', 'Å¥': 'ť', 'ÄŸ': 'ğ',
-            'Ä±': 'ı', 'ÅŸ': 'ş'
-        }
-
-        # First try to fix common mojibake
-        for wrong, correct in mojibake_map.items():
-            name = name.replace(wrong, correct)
-
-        # Then try decoding if it still looks encoded
-        if any(c in name for c in ['Ã', 'Â', 'Ä']):
-            try:
-                name = name.encode('latin1').decode('utf-8')
-            except:
-                pass
-
+        if isinstance(name, bytes):
+            name = name.decode('utf-8', errors='replace')
+        else:
+            name = str(name)
+        if any(marker in name for marker in MOJIBAKE_MARKERS):
+            name = MOJIBAKE_REGEX.sub(lambda m: MOJIBAKE_MAP[m.group(0)], name)
+            if any(marker in name for marker in MOJIBAKE_MARKERS):
+                try:
+                    name = name.encode('latin1').decode('utf-8')
+                except UnicodeDecodeError:
+                    pass
         return name
 
     # Get information about game
     url = config.FootballRapidApi.get_fixture_by_id_url(variables.MatchThreadVariables.live_match_football_api_id)
     logger.info("Football Rapid API: Fetched fixture details for updating match thread.")
-
     try:
         response = requests.get(url, headers=config.FootballRapidApi.FOOTBALL_RAPID_API_HEADERS).json()
         game_info_json = response["response"][0]
@@ -295,7 +284,7 @@ def update_match_thread(reddit_instance):
         logger.error(f"Failed to parse API response: {str(e)}")
         return
 
-    # Retry logic for events data
+    # Retry logic for events data.
     retry_count = 0
     elapsed_time = game_info_json.get("fixture", {}).get("status", {}).get("elapsed")
 
@@ -340,7 +329,7 @@ def update_match_thread(reddit_instance):
     goals_home = ""
     goals_away = ""
     if game_info_json.get("events"):
-        variables.MatchThreadVariables.live_match_events_already_existed = True
+        variables.MatchThreadVariables.live_match_events_already_existed = True  # Set the flag to True to enable retry logic if events are not included in API response data.
         for event in game_info_json["events"]:
             try:
                 if event.get("type") == "Goal" and event.get("detail") != "Missed Penalty":
