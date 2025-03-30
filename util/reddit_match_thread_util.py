@@ -443,17 +443,17 @@ def update_match_thread(reddit_instance):
                 if event_type == "Goal" and detail == "Missed Penalty":
                     submission_content += f"| {time_elapsed}′ | ❌ **Missed Penalty ({team_name}):** {player_name}. |\n"
                 elif event_type == "Goal" and event.get("team", {}).get("id") == config.FootballRapidApi.FOOTBALL_RAPID_API_INTER_CLUB_ID:
-                    assist_text = f", assist by {assist_name}" if assist_name else ""
+                    assist_text = f", assist by {assist_name}" if assist_name and assist_name != "Unknown" else ""
                     penalty_text = " (Penalty)" if detail == "Penalty" else ""
                     submission_content += f"| {time_elapsed}′ | ⚽ **GOAAAAAAAL (Inter): {player_name}{assist_text}{penalty_text}. Forza Inter!** ⚫🔵 |\n"
                 elif event_type == "Goal":
-                    assist_text = f", assist by {assist_name}" if assist_name else ""
+                    assist_text = f", assist by {assist_name}" if assist_name and assist_name != "Unknown" else ""
                     penalty_text = " (Penalty)" if detail == "Penalty" else ""
                     submission_content += f"| {time_elapsed}′ | ⚽ **Goal ({team_name}): {player_name}{assist_text}{penalty_text}.** |\n"
                 elif event_type == "Card" and detail == "Yellow Card":
                     submission_content += f"| {time_elapsed}′ | **🟨 Yellow card ({team_name}):** {player_name}. |\n"
                 elif event_type == "Card" and detail == "Red Card":
-                    submission_content += f"| {time_elapsed}′ | **🟥 Red card ({team_name}):** {player_name}. |\n"
+                    submission_content += f"| {time_elapsed}′ | **🔴 Red card ({team_name}):** {player_name}. |\n"
                 elif event_type == "subst" and assist_name:
                     submission_content += f"| {time_elapsed}′ | **🔄 Sub ({team_name}):** {player_name} replaces {assist_name}. |\n"
             except Exception as e:
