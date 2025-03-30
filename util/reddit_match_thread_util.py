@@ -330,6 +330,10 @@ def update_match_thread(reddit_instance):
     goals_away = ""
     if game_info_json.get("events"):
         variables.MatchThreadVariables.live_match_events_already_existed = True  # Set the flag to True to enable retry logic if events are not included in API response data.
+
+        goals_home_list = []
+        goals_away_list = []
+
         for event in game_info_json["events"]:
             try:
                 if event.get("type") == "Goal" and event.get("detail") != "Missed Penalty":
@@ -337,13 +341,18 @@ def update_match_thread(reddit_instance):
                     player_name = get_safe_name_str(event.get("player", {}).get("name", "Unknown Player"))
                     time_elapsed = event.get("time", {}).get("elapsed", "?")
 
+                    goal_entry = f"{player_name} ({time_elapsed}′)"
+
                     if team_id == game_info_json["teams"]["home"]["id"]:
-                        goals_home += f" {player_name} ({time_elapsed}′)"
+                        goals_home_list.append(goal_entry)
                     elif team_id == game_info_json["teams"]["away"]["id"]:
-                        goals_away += f" {player_name} ({time_elapsed}′)"
+                        goals_away_list.append(goal_entry)
             except Exception as e:
                 logger.error(f"Error processing event: {str(e)}")
                 continue
+        goals_home = ", ".join(goals_home_list)
+        goals_away = ", ".join(goals_away_list)
+
     else:
         logger.warning("Live match thread: couldn't extract team goals, no 'events' information in JSON data.")
 
