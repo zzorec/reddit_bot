@@ -243,155 +243,291 @@ def match_threads_updater(reddit_instance):
 
 
 def update_match_thread(reddit_instance):
+    # Helper function to safely get any name with consistent handling
+    def get_safe_name_str(name, default="Unknown"):
+        if name is None or name == "null":
+            return default
+
+        if not isinstance(name, str):
+            if isinstance(name, bytes):
+                name = name.decode('utf-8', errors='replace')
+            else:
+                name = str(name)
+
+        # Common mojibake patterns and their corrections
+        mojibake_map = {
+            'Ã‡': 'Ç', 'Ã§': 'ç',
+            'Ã¼': 'ü', 'Ã¤': 'ä', 'Ã¶': 'ö', 'ÃŸ': 'ß',
+            'Ã©': 'é', 'Ã¨': 'è', 'Ãª': 'ê', 'Ã«': 'ë',
+            'Ã¡': 'á', 'Ã ': 'à', 'Ã¢': 'â', 'Ã£': 'ã',
+            'Ã±': 'ñ', 'Ã³': 'ó', 'Ã²': 'ò', 'Ã´': 'ô',
+            'Ãµ': 'õ', 'Ã¸': 'ø', 'Ã¥': 'å',
+            'Ã‰': 'É', 'Ãœ': 'Ü', 'Ã–': 'Ö', 'Ã„': 'Ä',
+            'â€™': "'", 'â€“': '-', 'Ã®': 'î', 'Ã¯': 'ï',
+            'Ã¬': 'ì', 'Ã­': 'í', 'Ã¿': 'ÿ', 'Ã½': 'ý',
+            'Å¡': 'š', 'Å¾': 'ž', 'Ä‡': 'ć', 'Å‚': 'ł',
+            'Ä™': 'ę', 'Å„': 'ń', 'Åº': 'ź', 'Ä…': 'ą',
+            'Ä': 'č', 'Å¥': 'ť', 'ÄŸ': 'ğ',
+            'Ä±': 'ı', 'ÅŸ': 'ş'
+        }
+
+        # First try to fix common mojibake
+        for wrong, correct in mojibake_map.items():
+            name = name.replace(wrong, correct)
+
+        # Then try decoding if it still looks encoded
+        if any(c in name for c in ['Ã', 'Â', 'Ä']):
+            try:
+                name = name.encode('latin1').decode('utf-8')
+            except:
+                pass
+
+        return name
+
     # Get information about game
     url = config.FootballRapidApi.get_fixture_by_id_url(variables.MatchThreadVariables.live_match_football_api_id)
     logger.info("Football Rapid API: Fetched fixture details for updating match thread.")
-    game_info_json = requests.get(url, headers=config.FootballRapidApi.FOOTBALL_RAPID_API_HEADERS).json()["response"][0]
 
-    # Sometimes fetching the data from API doesn't contain events data - retry logic added to try to handle that.
+    try:
+        response = requests.get(url, headers=config.FootballRapidApi.FOOTBALL_RAPID_API_HEADERS).json()
+        game_info_json = response["response"][0]
+    except (KeyError, IndexError) as e:
+        logger.error(f"Failed to parse API response: {str(e)}")
+        return
+
+    # Retry logic for events data
     retry_count = 0
-    if game_info_json["fixture"]["status"]["elapsed"] > 0 and variables.MatchThreadVariables.live_match_events_already_existed:  # Only perform check if game has actually started and events exist.
+    elapsed_time = game_info_json.get("fixture", {}).get("status", {}).get("elapsed")
+
+    # Only perform check if game has actually started and events should exist
+    if elapsed_time is not None and elapsed_time > 0 and variables.MatchThreadVariables.live_match_events_already_existed:
         while not game_info_json.get("events"):
             logger.warning("Fetched game data for live match thread doesn't contain events, retrying...")
             time.sleep(10)
-            game_info_json = requests.get(url, headers=config.FootballRapidApi.FOOTBALL_RAPID_API_HEADERS).json()["response"][0]
+            try:
+                response = requests.get(url, headers=config.FootballRapidApi.FOOTBALL_RAPID_API_HEADERS).json()
+                game_info_json = response["response"][0]
+            except (KeyError, IndexError) as e:
+                logger.error(f"Failed to parse API response during retry: {str(e)}")
+                break
             retry_count += 1
             if retry_count > 2:
                 logger.warning("Reached max retries while trying to fetch events data for live match thread.")
                 break
 
-    # Generate match thread content.
+    # Generate match thread content
     submission_content = "\n\n---\n\n"
-    if game_info_json["fixture"]["status"]["short"] in ["FT", "AET", "PEN"]:
-        submission_content += f"# Full Time: {game_info_json['teams']['home']['name']} {game_info_json['goals']['home']}-{game_info_json['goals']['away']} {game_info_json['teams']['away']['name']}\n\n"
-    elif game_info_json["fixture"]["status"]["short"] == "HT":
-        submission_content += f"# Half Time: {game_info_json['teams']['home']['name']} {game_info_json['goals']['home']}-{game_info_json['goals']['away']} {game_info_json['teams']['away']['name']}\n\n"
+
+    # Handle different match statuses
+    status_short = game_info_json.get("fixture", {}).get("status", {}).get("short", "")
+    home_goals = game_info_json.get("goals", {}).get("home", 0) or 0
+    away_goals = game_info_json.get("goals", {}).get("away", 0) or 0
+
+    # Get safe team names
+    home_team_name = get_safe_name_str(game_info_json['teams']['home'].get('name', 'Home Team'))
+    away_team_name = get_safe_name_str(game_info_json['teams']['away'].get('name', 'Away Team'))
+
+    if status_short in ["FT", "AET", "PEN"]:
+        submission_content += f"# Full Time: {home_team_name} {home_goals}-{away_goals} {away_team_name}\n\n"
+    elif status_short == "HT":
+        submission_content += f"# Half Time: {home_team_name} {home_goals}-{away_goals} {away_team_name}\n\n"
+    elif elapsed_time is not None:
+        submission_content += f"# {elapsed_time}′: {home_team_name} {home_goals}-{away_goals} {away_team_name}\n\n"
     else:
-        submission_content += f"# {game_info_json['fixture']['status']['elapsed']}′: {game_info_json['teams']['home']['name']} {game_info_json['goals']['home']}-{game_info_json['goals']['away']} {game_info_json['teams']['away']['name']}\n\n"
+        submission_content += f"# {home_team_name} vs {away_team_name} - Match Not Started\n\n"
+
+    # Process goals
     goals_home = ""
     goals_away = ""
     if game_info_json.get("events"):
-        variables.MatchThreadVariables.live_match_events_already_existed = True  # Set the flag to True to enable retry logic if events are not included in API response data.
+        variables.MatchThreadVariables.live_match_events_already_existed = True
         for event in game_info_json["events"]:
-            if event.get("type") == "Goal" and event.get("detail") != "Missed Penalty":
-                if event.get("team")["id"] == game_info_json["teams"]["home"]["id"]:
-                    goals_home += f" {event['player']['name']} ({event['time']['elapsed']}′)"
-                elif event.get("team")["id"] == game_info_json["teams"]["away"]["id"]:
-                    goals_away += f" {event['player']['name']} ({event['time']['elapsed']}′)"
+            try:
+                if event.get("type") == "Goal" and event.get("detail") != "Missed Penalty":
+                    team_id = event.get("team", {}).get("id")
+                    player_name = get_safe_name_str(event.get("player", {}).get("name", "Unknown Player"))
+                    time_elapsed = event.get("time", {}).get("elapsed", "?")
+
+                    if team_id == game_info_json["teams"]["home"]["id"]:
+                        goals_home += f" {player_name} ({time_elapsed}′)"
+                    elif team_id == game_info_json["teams"]["away"]["id"]:
+                        goals_away += f" {player_name} ({time_elapsed}′)"
+            except Exception as e:
+                logger.error(f"Error processing event: {str(e)}")
+                continue
     else:
         logger.warning("Live match thread: couldn't extract team goals, no 'events' information in JSON data.")
-    if goals_home:
-        submission_content += f" **{game_info_json['teams']['home']['name']}:** {goals_home}.\n\n"
-    if goals_away:
-        submission_content += f" **{game_info_json['teams']['away']['name']}:** {goals_away}.\n\n"
-    submission_content += "\n\n---\n\n"
-    if game_info_json["fixture"].get("venue"):
-        submission_content += f"**Venue:** {game_info_json['fixture']['venue']['name']}\n\n"
-    if game_info_json["fixture"].get("referee"):
-        submission_content += f"**Referee:** {game_info_json['fixture']['referee']}\n\n"
-    try:
-        if (game_info_json.get("lineups") and game_info_json["lineups"][0].get("team") and game_info_json["lineups"][0].get("startXI")
-                and game_info_json["lineups"][0].get("substitutes") and game_info_json["lineups"][1].get("team") and game_info_json["lineups"][1].get("startXI")
-                and game_info_json["lineups"][1].get("substitutes")):
-            submission_content += "\n\n---\n\n"
-            home_line_up = game_info_json["lineups"][0]
-            away_line_up = game_info_json["lineups"][1]
-            submission_content += "### Lineups\n\n"
-            home_line_up["start"] = ", ".join(start["player"]["name"] for start in home_line_up["startXI"])
-            home_line_up["subs"] = ", ".join(sub["player"]["name"] for sub in home_line_up["substitutes"])
-            submission_content += f"#### {game_info_json['teams']['home']['name']}\n\n"
-            submission_content += f" **Starting XI:** {home_line_up['start']}\n\n"
-            submission_content += f" **Substitutes:** {home_line_up['subs']}\n\n"
-            if home_line_up.get("coach"):
-                submission_content += f" **Coach:** {home_line_up['coach']['name']}\n\n"
-            away_line_up["start"] = ", ".join(start["player"]["name"] for start in away_line_up["startXI"])
-            away_line_up["subs"] = ", ".join(sub["player"]["name"] for sub in away_line_up["substitutes"])
-            submission_content += f"#### {game_info_json['teams']['away']['name']}\n\n"
-            submission_content += f" **Starting XI:** {away_line_up['start']}\n\n"
-            submission_content += f" **Substitutes:** {away_line_up['subs']}\n\n"
-            if away_line_up.get("coach"):
-                submission_content += f" **Coach:** {away_line_up['coach']['name']}\n\n"
-        else:
-            logger.warning("Live match thread: couldn't extract team lineups, no 'lineups' information in JSON data.")
-    except KeyError:
-        logger.error("Error while parsing team lineups in match updateMatchThread() method: ")
 
-    events = game_info_json["events"]
+    if goals_home:
+        submission_content += f" **{home_team_name}:** {goals_home}.\n\n"
+    if goals_away:
+        submission_content += f" **{away_team_name}:** {goals_away}.\n\n"
+
+    submission_content += "\n\n---\n\n"
+
+    # Add venue and referee info with safe name handling
+    venue_name = game_info_json.get("fixture", {}).get("venue", {}).get("name")
+    if venue_name:
+        submission_content += f"**Venue:** {get_safe_name_str(venue_name)}\n\n"
+
+    referee_name = game_info_json.get("fixture", {}).get("referee")
+    if referee_name:
+        submission_content += f"**Referee:** {get_safe_name_str(referee_name)}\n\n"
+
+    # Process lineups
+    try:
+        lineups = game_info_json.get("lineups", [])
+        if (len(lineups) >= 2 and
+                lineups[0].get("team") and lineups[0].get("startXI") and lineups[0].get("substitutes") and
+                lineups[1].get("team") and lineups[1].get("startXI") and lineups[1].get("substitutes")):
+            submission_content += "\n\n---\n\n"
+            home_line_up = lineups[0]
+            away_line_up = lineups[1]
+            submission_content += "### Lineups\n\n"
+
+            # Process home lineup
+            try:
+                home_line_up["start"] = ", ".join(
+                    get_safe_name_str(player.get("player", {}).get("name", "Unknown Player"))
+                    for player in home_line_up["startXI"]
+                )
+                home_line_up["subs"] = ", ".join(
+                    get_safe_name_str(sub.get("player", {}).get("name", "Unknown Player"))
+                    for sub in home_line_up["substitutes"]
+                )
+                submission_content += f"#### {home_team_name}\n\n"
+                submission_content += f" **Starting XI:** {home_line_up['start']}\n\n"
+                submission_content += f" **Substitutes:** {home_line_up['subs']}\n\n"
+                if home_line_up.get("coach", {}).get("name"):
+                    submission_content += f" **Coach:** {get_safe_name_str(home_line_up['coach']['name'])}\n\n"
+            except Exception as e:
+                logger.error(f"Error processing home lineup: {str(e)}")
+
+            # Process away lineup
+            try:
+                away_line_up["start"] = ", ".join(
+                    get_safe_name_str(player.get("player", {}).get("name", "Unknown Player"))
+                    for player in away_line_up["startXI"]
+                )
+                away_line_up["subs"] = ", ".join(
+                    get_safe_name_str(sub.get("player", {}).get("name", "Unknown Player"))
+                    for sub in away_line_up["substitutes"]
+                )
+                submission_content += f"#### {away_team_name}\n\n"
+                submission_content += f" **Starting XI:** {away_line_up['start']}\n\n"
+                submission_content += f" **Substitutes:** {away_line_up['subs']}\n\n"
+                if away_line_up.get("coach", {}).get("name"):
+                    submission_content += f" **Coach:** {get_safe_name_str(away_line_up['coach']['name'])}\n\n"
+            except Exception as e:
+                logger.error(f"Error processing away lineup: {str(e)}")
+        else:
+            logger.warning("Live match thread: couldn't extract team lineups, incomplete 'lineups' information in JSON data.")
+    except Exception as e:
+        logger.error(f"Error while parsing team lineups: {str(e)}")
+
+    # Process events
+    events = game_info_json.get("events", [])
     if events:
         submission_content += "\n\n---\n\n"
         submission_content += "### Match Events\n\n"
         submission_content += "| Min | Event |\n"
         submission_content += "|:-:|:--|\n"
+
         for event in events:
-            if event["type"] == "Goal" and event["detail"] == "Missed Penalty":
-                submission_content += f"| {event['time']['elapsed']}′ | ❌ **Missed Penalty ({event['team']['name']}):** {event['player']['name']}. |\n"
-            elif event["type"] == "Goal" and event["team"]["id"] == config.FootballRapidApi.FOOTBALL_RAPID_API_INTER_CLUB_ID:
-                submission_content += f"| {event['time']['elapsed']}′ | ⚽ **GOAAAAAAAL (Inter): {event['player']['name']}{'' if not event['assist'] else ', assist by ' + event['assist']['name']}{'' if event['detail'] != 'Penalty' else ' (Penalty)'}. Forza Inter!** ⚫🔵 |\n"
-            elif event["type"] == "Goal":
-                submission_content += f"| {event['time']['elapsed']}′ | ⚽ **Goal ({event['team']['name']}): {event['player']['name']}{'' if not event['assist'] else ', assist by ' + event['assist']['name']}{'' if event['detail'] != 'Penalty' else ' (Penalty)'}.** |\n"
-            elif event["type"] == "Card" and event["detail"] == "Yellow Card":
-                submission_content += f"| {event['time']['elapsed']}′ | **🟨 Yellow card ({event['team']['name']}):** {event['player']['name']}. |\n"
-            elif event["type"] == "Card" and event["detail"] == "Red Card":
-                submission_content += f"| {event['time']['elapsed']}′ | **🟥 Red card ({event['team']['name']}):** {event['player']['name']}. |\n"
-            elif event["type"] == "subst":
-                submission_content += f"| {event['time']['elapsed']}′ | **🔄 Sub ({event['team']['name']}):** {event['player']['name']} replaces {event['assist']['name']}. |\n"
+            try:
+                event_type = event.get("type")
+                time_elapsed = event.get("time", {}).get("elapsed", "?")
+                team_name = get_safe_name_str(event.get("team", {}).get("name", "Unknown Team"))
+                player_name = get_safe_name_str(event.get("player", {}).get("name", "Unknown Player"))
+                assist_name = get_safe_name_str(event.get("assist", {}).get("name")) if event.get("assist") else None
+                detail = event.get("detail", "")
+
+                if event_type == "Goal" and detail == "Missed Penalty":
+                    submission_content += f"| {time_elapsed}′ | ❌ **Missed Penalty ({team_name}):** {player_name}. |\n"
+                elif event_type == "Goal" and event.get("team", {}).get("id") == config.FootballRapidApi.FOOTBALL_RAPID_API_INTER_CLUB_ID:
+                    assist_text = f", assist by {assist_name}" if assist_name else ""
+                    penalty_text = " (Penalty)" if detail == "Penalty" else ""
+                    submission_content += f"| {time_elapsed}′ | ⚽ **GOAAAAAAAL (Inter): {player_name}{assist_text}{penalty_text}. Forza Inter!** ⚫🔵 |\n"
+                elif event_type == "Goal":
+                    assist_text = f", assist by {assist_name}" if assist_name else ""
+                    penalty_text = " (Penalty)" if detail == "Penalty" else ""
+                    submission_content += f"| {time_elapsed}′ | ⚽ **Goal ({team_name}): {player_name}{assist_text}{penalty_text}.** |\n"
+                elif event_type == "Card" and detail == "Yellow Card":
+                    submission_content += f"| {time_elapsed}′ | **🟨 Yellow card ({team_name}):** {player_name}. |\n"
+                elif event_type == "Card" and detail == "Red Card":
+                    submission_content += f"| {time_elapsed}′ | **🟥 Red card ({team_name}):** {player_name}. |\n"
+                elif event_type == "subst" and assist_name:
+                    submission_content += f"| {time_elapsed}′ | **🔄 Sub ({team_name}):** {player_name} replaces {assist_name}. |\n"
+            except Exception as e:
+                logger.error(f"Error processing event: {str(e)}")
+                continue
     else:
         logger.warning("Live match thread: couldn't extract game events, no 'events' information in JSON data.")
 
+    # Process statistics
     if game_info_json.get("statistics"):
-        submission_content += "\n\n---\n\n"
-        submission_content += "### Match Stats\n\n"
-        stats_home = game_info_json["statistics"][0]["statistics"]
-        stats_away = game_info_json["statistics"][1]["statistics"]
-        submission_content += f"| {game_info_json['teams']['home']['name']} |  | {game_info_json['teams']['away']['name']} |\n"
-        submission_content += "|:-:|:-:|:-:|\n"
-        for stat in stats_home:
-            if stat["type"] == "Ball Possession":
-                submission_content += f"| {stat['value']} | Ball Possession | {next(s['value'] for s in stats_away if s['type'] == 'Ball Possession')} |\n"
-            elif stat["type"] == "Total Shots":
-                submission_content += f"| {stat['value']} | Total Shots | {next(s['value'] for s in stats_away if s['type'] == 'Total Shots')} |\n"
-            elif stat["type"] == "Shots on Goal":
-                submission_content += f"| {stat['value']} | Shots On-Goal | {next(s['value'] for s in stats_away if s['type'] == 'Shots on Goal')} |\n"
-            elif stat["type"] == "Shots off Goal":
-                submission_content += f"| {stat['value']} | Shots Off-Goal | {next(s['value'] for s in stats_away if s['type'] == 'Shots off Goal')} |\n"
-            elif stat["type"] == "Blocked Shots":
-                submission_content += f"| {stat['value']} | Blocked Shots | {next(s['value'] for s in stats_away if s['type'] == 'Blocked Shots')} |\n"
-            elif stat["type"] == "Shots insidebox":
-                submission_content += f"| {stat['value']} | Shots Inside Box | {next(s['value'] for s in stats_away if s['type'] == 'Shots insidebox')} |\n"
-            elif stat["type"] == "Shots outsidebox":
-                submission_content += f"| {stat['value']} | Shots Outside Box | {next(s['value'] for s in stats_away if s['type'] == 'Shots outsidebox')} |\n"
-            elif stat["type"] == "Fouls":
-                submission_content += f"| {stat['value']} | Fouls | {next(s['value'] for s in stats_away if s['type'] == 'Fouls')} |\n"
-            elif stat["type"] == "Corner Kicks":
-                submission_content += f"| {stat['value']} | Corner Kicks | {next(s['value'] for s in stats_away if s['type'] == 'Corner Kicks')} |\n"
-            elif stat["type"] == "Offsides":
-                submission_content += f"| {stat['value']} | Offsides | {next(s['value'] for s in stats_away if s['type'] == 'Offsides')} |\n"
-            elif stat["type"] == "Yellow Cards":
-                submission_content += f"| {stat['value']} | Yellow Cards | {next(s['value'] for s in stats_away if s['type'] == 'Yellow Cards')} |\n"
-            elif stat["type"] == "Red Cards":
-                submission_content += f"| {stat['value']} | Red Cards | {next(s['value'] for s in stats_away if s['type'] == 'Red Cards')} |\n"
-            elif stat["type"] == "Total passes":
-                submission_content += f"| {stat['value']} | Total passes | {next(s['value'] for s in stats_away if s['type'] == 'Total passes')} |\n"
-            elif stat["type"] == "Passes accurate":
-                submission_content += f"| {stat['value']} | Accurate passes | {next(s['value'] for s in stats_away if s['type'] == 'Passes accurate')} |\n"
-            elif stat["type"] == "Passes %":
-                submission_content += f"| {stat['value']} | Passing accuracy | {next(s['value'] for s in stats_away if s['type'] == 'Passes %')} |\n"
+        try:
+            submission_content += "\n\n---\n\n"
+            submission_content += "### Match Stats\n\n"
+
+            stats_home = game_info_json["statistics"][0].get("statistics", [])
+            stats_away = game_info_json["statistics"][1].get("statistics", [])
+
+            submission_content += f"| {home_team_name} |  | {away_team_name} |\n"
+            submission_content += "|:-:|:-:|:-:|\n"
+
+            stat_mapping = {
+                "Ball Possession": "Ball Possession",
+                "Total Shots": "Total Shots",
+                "Shots on Goal": "Shots On-Goal",
+                "Shots off Goal": "Shots Off-Goal",
+                "Blocked Shots": "Blocked Shots",
+                "Shots insidebox": "Shots Inside Box",
+                "Shots outsidebox": "Shots Outside Box",
+                "Fouls": "Fouls",
+                "Corner Kicks": "Corner Kicks",
+                "Offsides": "Offsides",
+                "Yellow Cards": "Yellow Cards",
+                "Red Cards": "Red Cards",
+                "Total passes": "Total passes",
+                "Passes accurate": "Accurate passes",
+                "Passes %": "Passing accuracy"
+            }
+
+            for stat_type, display_name in stat_mapping.items():
+                home_value = next((s.get("value", "0") for s in stats_home if s.get("type") == stat_type), "0")
+                away_value = next((s.get("value", "0") for s in stats_away if s.get("type") == stat_type), "0")
+                submission_content += f"| {home_value} | {display_name} | {away_value} |\n"
+        except Exception as e:
+            logger.error(f"Error processing statistics: {str(e)}")
     else:
         logger.warning("Live match thread: couldn't extract statistics, no 'statistics' information in JSON data.")
+
     submission_content += "\n\n---\n\n"
     submission_content = submission_content.replace("None", "0")
 
-    # Update existing match thread.
-    reddit_instance.submission(id=variables.MatchThreadVariables.live_match_reddit_submission_id).edit(submission_content)
-    logger.info("Updated live match thread for match ID: " + str(variables.MatchThreadVariables.live_match_football_api_id))
+    # Update existing match thread
+    try:
+        reddit_instance.submission(id=variables.MatchThreadVariables.live_match_reddit_submission_id).edit(submission_content)
+        logger.info("Updated live match thread for match ID: " + str(variables.MatchThreadVariables.live_match_football_api_id))
+    except Exception as e:
+        logger.error(f"Failed to update Reddit submission: {str(e)}")
 
-    # When game is done, create the post-match discussion thread.
-    if game_info_json["fixture"]["status"]["short"] in ["FT", "AET", "PEN"]:
-        # Set post-match discussion thread title and content
-        variables.MatchThreadVariables.post_match_thread_title = "[Post-Match Discussion Thread] " + game_info_json["teams"]["home"]["name"] + " " + str(game_info_json["goals"]["home"]) + ":" + str(game_info_json["goals"]["away"]) + " " + game_info_json["teams"]["away"][
-            "name"] + " (" + game_info_json["league"]["name"] + ", " + str(game_info_json["league"]["round"]).replace("Regular Season -", "Matchday") + ")"
-        variables.MatchThreadVariables.post_match_thread_content = submission_content
-        create_post_match_thread(reddit_instance, None)
+    # Create post-match thread if game is finished
+    if status_short in ["FT", "AET", "PEN"]:
+        try:
+            round_info = game_info_json.get("league", {}).get("round", "").replace("Regular Season -", "Matchday")
+            league_name = get_safe_name_str(game_info_json.get("league", {}).get("name", ""))
+
+            variables.MatchThreadVariables.post_match_thread_title = (
+                f"[Post-Match Discussion Thread] {home_team_name} "
+                f"{home_goals}:{away_goals} {away_team_name} "
+                f"({league_name}, {round_info})"
+            )
+            variables.MatchThreadVariables.post_match_thread_content = submission_content
+            create_post_match_thread(reddit_instance, None)
+        except Exception as e:
+            logger.error(f"Failed to prepare post-match thread: {str(e)}")
 
 
 def create_post_match_thread(reddit_instance, comment=None):
