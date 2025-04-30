@@ -106,7 +106,7 @@ def create_pre_match_thread(reddit_instance, comment, next_match) -> None:
     injuries_data = injuries_json.get("response", [])
     if injuries_data:
         submission_content += "## 🏥 Injured/Suspended Players 🏥\n\n"
-        submission_content += "^(This bot feature is still in beta, information could be inaccurate.)\n\n"
+        submission_content += "^(*This bot feature is still in beta, information could be inaccurate.*)\n\n"
         submission_content += "| Player | Reason | Status | Team |\n"
         submission_content += "|:--|:-:|:-:|:-:|\n"
         for item in injuries_data:
@@ -122,43 +122,63 @@ def create_pre_match_thread(reddit_instance, comment, next_match) -> None:
     if h2h_data_fixtures:
         submission_content += "## ⚔️ Head-to-Head ⚔️\n\n"
         submission_content += "### Statistics\n\n"
-        submission_content += "^(H2H statistics may include only fixtures from recent years and may not represent overall historical data.)\n\n"
+        submission_content += "^(*H2H statistics may include only fixtures from recent years and may not represent overall historical data.*)\n\n"
 
         home_team = next_game_info_json["teams"]["home"]["name"]
         away_team = next_game_info_json["teams"]["away"]["name"]
-        total_played = len(h2h_data_fixtures)
-        home_wins = sum(1 for match in h2h_data_fixtures if match["teams"]["home"]["id"] == next_game_info_json["teams"]["home"]["id"] and match["teams"]["home"]["winner"])
-        away_wins = sum(1 for match in h2h_data_fixtures if match["teams"]["away"]["id"] == next_game_info_json["teams"]["away"]["id"] and match["teams"]["away"]["winner"])
-        draws = total_played - (home_wins + away_wins)
+
+        # Only consider completed matches for statistics
+        completed_matches = [match for match in h2h_data_fixtures if match["fixture"]["status"]["short"] in ["FT", "AET", "PEN"]]
+
+        total_played = len(completed_matches)
+        home_wins = 0
+        away_wins = 0
+        draws = 0
+
+        for match in completed_matches:
+            home_id = match["teams"]["home"]["id"]
+            away_id = match["teams"]["away"]["id"]
+            home_goals = match["goals"]["home"]
+            away_goals = match["goals"]["away"]
+
+            if home_goals == away_goals:
+                draws += 1
+            elif home_goals > away_goals:
+                if home_id == next_game_info_json["teams"]["home"]["id"]:
+                    home_wins += 1
+                else:
+                    away_wins += 1
+            else:
+                if away_id == next_game_info_json["teams"]["away"]["id"]:
+                    away_wins += 1
+                else:
+                    home_wins += 1
 
         submission_content += f"| Total Played | {home_team} Win | Draw | {away_team} Win |\n"
         submission_content += "|:-:|:-:|:-:|:-:|\n"
         submission_content += f"| {total_played} | {home_wins} | {draws} | {away_wins} |\n"
 
-        filtered_fixtures = [match for match in h2h_data_fixtures if match["fixture"]["status"]["short"] in ["FT", "AET", "PEN"]]
-        sorted_fixtures = sorted(filtered_fixtures, key=lambda match: match["fixture"]["timestamp"], reverse=True)
+        sorted_fixtures = sorted(completed_matches, key=lambda match: match["fixture"]["timestamp"], reverse=True)[:8]
 
         if sorted_fixtures:
-            submission_content += "### Latest Results\n\n"
+            submission_content += "\n### Latest Results\n\n"
             submission_content += "| Home | Score | Away | Date | Competition |\n"
             submission_content += "|:-:|:-:|:-:|:-:|:-:|\n"
 
-        for index, match in enumerate(sorted_fixtures):
-            if index > 8:
-                break
-            home = match["teams"]["home"]["name"]
-            away = match["teams"]["away"]["name"]
-            home_goals = match["goals"]["home"]
-            away_goals = match["goals"]["away"]
-            date = format_date(match["fixture"]["date"], True, True)
-            competition = match["league"]["name"]
+            for match in sorted_fixtures:
+                home = match["teams"]["home"]["name"]
+                away = match["teams"]["away"]["name"]
+                home_goals = match["goals"]["home"]
+                away_goals = match["goals"]["away"]
+                date = format_date(match["fixture"]["date"], True, True)
+                competition = match["league"]["name"]
 
-            if home_goals > away_goals:
-                submission_content += f"| **{home}** | {home_goals}:{away_goals} | {away} | {date} | {competition} |\n"
-            elif home_goals < away_goals:
-                submission_content += f"| {home} | {home_goals}:{away_goals} | **{away}** | {date} | {competition} |\n"
-            else:
-                submission_content += f"| {home} | {home_goals}:{away_goals} | {away} | {date} | {competition} |\n"
+                if home_goals > away_goals:
+                    submission_content += f"| **{home}** | {home_goals}-{away_goals} | {away} | {date} | {competition} |\n"
+                elif home_goals < away_goals:
+                    submission_content += f"| {home} | {home_goals}-{away_goals} | **{away}** | {date} | {competition} |\n"
+                else:
+                    submission_content += f"| {home} | {home_goals}-{away_goals} | {away} | {date} | {competition} |\n"
 
         submission_content += "\n\n---\n\n"
 
