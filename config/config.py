@@ -72,7 +72,7 @@ class Reddit:
     MATCH_THREAD_UPDATE_INTERVAL: Final[int] = 120  # In seconds - every 2 minutes.
     SIDEBAR_UPDATE_INTERVAL: Final[int] = 14400  # In seconds - every 4 hours.
     SUBMISSION_CHECK_INTERVAL: Final[int] = 30  # In seconds.
-    SUBMISSION_CHECK_BATCH_SIZE: Final[int] = 50  # Number of submissions to check in each batch.
+    SUBMISSION_CHECK_BATCH_SIZE: Final[int] = 100  # Number of submissions to check in each batch.
 
 
 if __name__ == "__main__":

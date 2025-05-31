@@ -40,7 +40,7 @@ def match_threads_creator(reddit_instance) -> None:
             except Exception:
                 logger.exception("Error while scheduler tried to create a new pre-match discussion thread.")
 
-        if remaining_until_next_game < timedelta(minutes=60) and not variables.MatchThreadVariables.live_match_thread_created:  # If less than an hour away from a match, create pre-match thread.
+        if remaining_until_next_game < timedelta(minutes=60) and not variables.MatchThreadVariables.live_match_thread_created:  # If less than an hour away from a match, create live-match thread.
             logger.info(f"Creating a live-match discussion thread for: {match_teams}")
             try:
                 create_live_match_thread(reddit_instance, None, next_match)
@@ -59,7 +59,7 @@ def create_pre_match_thread(reddit_instance, comment, next_match) -> None:
     submission_title = "[Pre-Match Discussion Thread] " + next_game_info_json["teams"]["home"]["name"] + " vs " + next_game_info_json["teams"]["away"]["name"] + " (" + next_game_info_json["league"]["name"] + ", " + next_game_info_json["league"]["round"].replace("Regular Season -", "Matchday") + ")"
 
     # Check if pre-match thread already exists.
-    existing_submissions = subreddit.new(limit=50)
+    existing_submissions = subreddit.new(limit=config.Reddit.SUBMISSION_CHECK_BATCH_SIZE)
     for existing_submission in existing_submissions:
         if submission_title == existing_submission.title:
             if comment is not None:
@@ -207,7 +207,7 @@ def create_live_match_thread(reddit_instance, comment, next_match):
     submission_title = "[Match Thread] " + next_game_info_json["teams"]["home"]["name"] + " vs " + next_game_info_json["teams"]["away"]["name"] + " (" + next_game_info_json["league"]["name"] + ", " + next_game_info_json["league"]["round"].replace("Regular Season -", "Matchday") + ")"
 
     # Check if match thread already exists.
-    existing_submissions = subreddit.new(limit=50)
+    existing_submissions = subreddit.new(limit=config.Reddit.SUBMISSION_CHECK_BATCH_SIZE)
     for existing_submission in existing_submissions:
         if submission_title == existing_submission.title:
             if comment is not None:
@@ -552,7 +552,7 @@ def create_post_match_thread(reddit_instance, comment=None):
     subreddit = reddit_instance.subreddit(config.Reddit.SUBREDDIT_NAME)
 
     # Check if match thread already exists.
-    existing_submissions = subreddit.new(limit=50)
+    existing_submissions = subreddit.new(limit=config.Reddit.SUBMISSION_CHECK_BATCH_SIZE)
     for existing_submission in existing_submissions:
         if variables.MatchThreadVariables.post_match_thread_title == existing_submission.title:
             if comment is not None:
