@@ -1,6 +1,7 @@
 import re
 import time
 from datetime import timedelta, datetime
+from json import JSONDecodeError
 from typing import Final
 
 import pytz
@@ -300,7 +301,7 @@ def update_match_thread(reddit_instance):
     try:
         response = requests.get(url, headers=config.FootballRapidApi.FOOTBALL_RAPID_API_HEADERS).json()
         game_info_json = response["response"][0]
-    except (KeyError, IndexError) as e:
+    except (KeyError, IndexError, JSONDecodeError) as e:
         logger.error(f"Failed to parse API response: {str(e)}")
         return
 
