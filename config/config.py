@@ -34,7 +34,10 @@ class FootballRapidApi:
 
     @staticmethod
     def get_fixtures_by_league_id_url(league_id: int) -> str:
-        return FootballRapidApi.FOOTBALL_RAPID_API_V3_FIXTURES_ENDPOINT.format(league_id, get_active_season(), FootballRapidApi.FOOTBALL_RAPID_API_INTER_CLUB_ID)
+        if league_id == FootballRapidApi.FOOTBALL_RAPID_API_CLUB_WORLD_CUP_ID:
+            return FootballRapidApi.FOOTBALL_RAPID_API_V3_FIXTURES_ENDPOINT.format(league_id, get_active_season() + 1, FootballRapidApi.FOOTBALL_RAPID_API_INTER_CLUB_ID)
+        else:
+            return FootballRapidApi.FOOTBALL_RAPID_API_V3_FIXTURES_ENDPOINT.format(league_id, get_active_season(), FootballRapidApi.FOOTBALL_RAPID_API_INTER_CLUB_ID)
 
     @staticmethod
     def get_next_team_fixtures_url(next_matches: int) -> str:
@@ -50,7 +53,10 @@ class FootballRapidApi:
 
     @staticmethod
     def get_table_by_league_id_url(league_id: int) -> str:
-        return FootballRapidApi.FOOTBALL_RAPID_API_V3_LEAGUE_TABLE_ENDPOINT.format(league_id, get_active_season())
+        if league_id == FootballRapidApi.FOOTBALL_RAPID_API_CLUB_WORLD_CUP_ID:
+            return FootballRapidApi.FOOTBALL_RAPID_API_V3_LEAGUE_TABLE_ENDPOINT.format(league_id, get_active_season() + 1)
+        else:
+            return FootballRapidApi.FOOTBALL_RAPID_API_V3_LEAGUE_TABLE_ENDPOINT.format(league_id, get_active_season())
 
     @staticmethod
     def get_h2h_by_team_id_url(home_team: int, away_team: int) -> str:
