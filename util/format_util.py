@@ -43,7 +43,15 @@ def add_league_table(content: str, league_id: int, league_name: str) -> str:
         if response_data:
             standings = response_data[0].get("league", {}).get("standings", [])
             if standings:
-                table = standings[0]  # Assuming the first element is the main standings table
+
+                # Find club's specific group in group stages.
+                cwc_inter_group_id = 0
+                for group_index, group in enumerate(standings):
+                    for team_data in group:
+                        if team_data['team']['id'] == config.FootballRapidApi.FOOTBALL_RAPID_API_INTER_CLUB_ID:
+                            cwc_inter_group_id = group_index
+
+                table = standings[cwc_inter_group_id]
                 content += f"\n### {league_name}\n"
                 content += "| # | Team | PL | GD | Pts |\n"
                 content += "|:-:|:--|:-:|:-:|:-:|\n"
