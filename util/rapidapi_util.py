@@ -26,7 +26,16 @@ def get_club_world_cup_standings(comment) -> None:
     if cwc_response.status_code == 200:
         cwc_response_json = cwc_response.json()
         if cwc_response_json["response"]:
-            table = cwc_response_json["response"][0]["league"]["standings"][0]
+
+            # Find club's specific group in group stages.
+            cwc_groups = cwc_response_json['response'][0]['league']['standings']
+            cwc_inter_group_id = 0
+            for group_index, group in enumerate(cwc_groups):
+                for team_data in group:
+                    if team_data['team']['id'] == config.FootballRapidApi.FOOTBALL_RAPID_API_INTER_CLUB_ID:
+                        cwc_inter_group_id = group_index
+
+            table = cwc_response_json["response"][0]["league"]["standings"][cwc_inter_group_id]
             comment_response += "\n 🏆 **Club World Cup** 🏆\n\n"
             comment_response += "\n### Group stage\n"
             comment_response += "| # | Team | PL | GD | Pts |\n"
@@ -46,7 +55,7 @@ def get_club_world_cup_standings(comment) -> None:
 
     if cwc_knockout_response.status_code == 200:
         cwc_knockout_response_json = cwc_knockout_response.json()
-        if len(cwc_knockout_response_json.get("response", [])) > 8:
+        if len(cwc_knockout_response_json.get("response", [])) > 3:
             comment_response += "\n### Knockout stages\n\n"
             comment_response += "**Date**|**Opponent**|**Result**|**Round**|\n"
             comment_response += ":-:|:-:|:-:|:-:|\n"
