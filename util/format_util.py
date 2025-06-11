@@ -82,7 +82,7 @@ def add_knockout_stages(content: str, competition_id: int, competition_name: str
                 fixture_result = f"**{fixture['result']} {fixture['goalsHomeTeam']}-{fixture['goalsAwayTeam']}**" if fixture["result"] else ""
                 ko_fixtures += f"{format_date(fixture['date'], True, False)}|{fixture['isAway']}{fixture['opponent']}|{fixture_result}|{fixture['round']}\n"
         if ko_fixtures:
-            if competition_name != "Champions League":
+            if competition_name not in ["Champions League", "FIFA Club World Cup"]:
                 content += f"\n### {competition_name}\n\n"
             else:
                 content += f"\n\n\n"
