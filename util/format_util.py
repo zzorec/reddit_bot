@@ -12,7 +12,7 @@ def extract_cup_fixture(fixture: dict) -> dict:
         "date": fixture["fixture"]["date"],
         "goalsHomeTeam": fixture["goals"]["home"],
         "goalsAwayTeam": fixture["goals"]["away"],
-        "round": "RO32" if fixture["league"]["round"] == "Round of 32" else "RO16" if fixture["league"]["round"] == "Round of 16" else "QF" if fixture["league"]["round"] == "Quarter-finals" else "SF" if fixture["league"]["round"] == "Semi-finals" else fixture["league"]["round"],
+        "round": "RO32" if fixture["league"]["round"] == "Round of 32" else "RO16" if fixture["league"]["round"] in ["Round of 16", "8th Finals"] else "QF" if fixture["league"]["round"] == "Quarter-finals" else "SF" if fixture["league"]["round"] == "Semi-finals" else fixture["league"]["round"],
     }
     if fixture["fixture"]["status"]["short"] not in ["FT", "AET", "PEN", "ABD", "PST", "SUSP", "CANC"]:
         response["result"] = ""
@@ -82,7 +82,7 @@ def add_knockout_stages(content: str, competition_id: int, competition_name: str
                 fixture_result = f"**{fixture['result']} {fixture['goalsHomeTeam']}-{fixture['goalsAwayTeam']}**" if fixture["result"] else ""
                 ko_fixtures += f"{format_date(fixture['date'], True, False)}|{fixture['isAway']}{fixture['opponent']}|{fixture_result}|{fixture['round']}\n"
         if ko_fixtures:
-            if competition_name not in ["Champions League", "FIFA Club World Cup"]:
+            if competition_name not in ["Champions League", "FIFA Club World Cup", "Club World Cup"]:
                 content += f"\n### {competition_name}\n\n"
             else:
                 content += f"\n\n\n"
