@@ -1,3 +1,5 @@
+from json import JSONDecodeError
+
 import requests
 
 from reddit_bot.config import config
@@ -12,7 +14,7 @@ def fetch_next_game():  # Fetches info about next game.
     logger.info(f"Football Rapid API: Fetched next game.")
     try:
         return requests.get(request_url, headers=config.FootballRapidApi.FOOTBALL_RAPID_API_HEADERS).json()["response"][0]
-    except IndexError:
+    except (IndexError, KeyError, JSONDecodeError):
         logger.info("Fetch next games method hasn't returned any values as no games available.")
         return None
 
