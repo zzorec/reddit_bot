@@ -476,7 +476,7 @@ def update_match_thread(reddit_instance):
                 elif event_type == "Card" and detail == "Red Card":
                     submission_content += f"| {time_elapsed}′ | **🟥 Red card ({team_name}):** {player_name}. |\n"
                 elif event_type == "subst" and assist_name:
-                    submission_content += f"| {time_elapsed}′ | **🔄 Sub ({team_name}):** {player_name} replaces {assist_name}. |\n"
+                    submission_content += f"| {time_elapsed}′ | **🔄 Sub ({team_name}):** {assist_name} replaces {player_name}. |\n"
             except Exception as e:
                 logger.error(f"Error processing event: {str(e)}")
                 continue
