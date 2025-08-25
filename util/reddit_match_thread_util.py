@@ -24,7 +24,8 @@ def match_threads_creator(reddit_instance) -> None:
 
         if not next_match:  # In case no information is available for next game.
             logger.info("Match thread organizer didn't find any upcoming games.")
-            return
+            time.sleep(config.Reddit.MATCH_THREAD_CHECK_INTERVAL)  # Wait 30 minutes before checking again.
+            continue
 
         logger.info("Checking next matches for creation of match threads.")
 
@@ -46,7 +47,7 @@ def match_threads_creator(reddit_instance) -> None:
             try:
                 create_live_match_thread(reddit_instance, None, next_match)
             except Exception:
-                logger.exception("Error while scheduler tried to create a new pre-match discussion thread.")
+                logger.exception("Error while scheduler tried to create a new live-match discussion thread.")
         time.sleep(config.Reddit.MATCH_THREAD_CHECK_INTERVAL)  # Wait 30 minutes before checking again.
 
 
