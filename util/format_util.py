@@ -12,7 +12,7 @@ def extract_cup_fixture(fixture: dict) -> dict:
         "date": fixture["fixture"]["date"],
         "goalsHomeTeam": fixture["goals"]["home"],
         "goalsAwayTeam": fixture["goals"]["away"],
-        "round": "RO32" if fixture["league"]["round"] == "Round of 32" else "RO16" if fixture["league"]["round"] in ["Round of 16", "8th Finals"] else "QF" if fixture["league"]["round"] == "Quarter-finals" else "SF" if fixture["league"]["round"] == "Semi-finals" else fixture["league"]["round"],
+        "round": "RO32" if fixture["league"]["round"] == "Round of 32" else "RO16" if fixture["league"]["round"] in ["Round of 16", "8th Finals", "3rd Round"] else "QF" if fixture["league"]["round"] == "Quarter-finals" else "SF" if fixture["league"]["round"] == "Semi-finals" else fixture["league"]["round"],
     }
     if fixture["fixture"]["status"]["short"] not in ["FT", "AET", "PEN", "ABD", "PST", "SUSP", "CANC"]:
         response["result"] = ""
