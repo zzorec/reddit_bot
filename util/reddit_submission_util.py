@@ -2,7 +2,7 @@ import re
 import time
 
 from praw.models import Submission
-from prawcore import RequestException, ServerError, Forbidden
+from prawcore import RequestException, ServerError, Forbidden, BadJSON
 
 from reddit_bot.config import config
 from reddit_bot.data import resources, variables
@@ -36,7 +36,7 @@ def process_submissions_organizer(reddit_instance) -> None:
             submissions = subreddit.new(limit=config.Reddit.SUBMISSION_CHECK_BATCH_SIZE)
             for submission in submissions:
                 _process_submissions(submission)
-        except (RequestException, ServerError, Forbidden, ValueError) as e:  # This error handling is needed because sometimes, Reddit API will error out and would stop the processing thread.
+        except (RequestException, ServerError, Forbidden, ValueError, BadJSON) as e:  # This error handling is needed because sometimes, Reddit API will error out and would stop the processing thread.
             logger.warning(f"{e} - Error communicating with Reddit when processing submissions!")
         time.sleep(config.Reddit.SUBMISSION_CHECK_INTERVAL)
 
