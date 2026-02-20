@@ -2,7 +2,7 @@ import re
 import time
 
 from praw.exceptions import RedditAPIException
-from prawcore import RequestException, ServerError, Forbidden
+from prawcore import RequestException, ServerError, Forbidden, BadJSON
 
 from reddit_bot.config import config
 from reddit_bot.data import resources, variables
@@ -20,7 +20,7 @@ def process_comments_organizer(reddit_instance) -> None:  # Open comments stream
         for comment in comment_stream:
             try:
                 _process_comments(reddit_instance, comment)
-            except (RequestException, ServerError, Forbidden, RedditAPIException) as e:  # This error handling is needed because sometimes, Reddit API will error out and would stop the processing thread.
+            except (RequestException, ServerError, Forbidden, RedditAPIException, BadJSON) as e:  # This error handling is needed because sometimes, Reddit API will error out and would stop the processing thread.
                 logger.warning(f"{e} - Error communicating with Reddit when processing comments!")
     except (RequestException, ServerError, Forbidden, ValueError) as e:  # This error handling is needed because sometimes, Reddit API will error out and would stop the processing thread.
         logger.error(f"{e} - Error communicating with Reddit when handling comment stream!")
