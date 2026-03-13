@@ -85,7 +85,7 @@ class Sidebar:
     LINKS: Final[
         str] = "###Inter network\n\n######[Website](http://www.inter.it/en/hp)\n\n######[Twitter](https://twitter.com/Inter_en)\n\n######[Facebook](https://www.facebook.com/Inter/?ref=br_rs)\n\n######[Instagram](https://www.instagram.com/inter/)\n\n######[YouTube](https://www.youtube.com/user/INTER)\n\n######[Podcast](https://open.spotify.com/show/7l9XbUdnHuzXuTTAj1a4Q7?si=BiIVLaCAQ5-SO3k-OFz0yA)\n\n"
     COMMUNITIES: Final[
-        str] = "###Inter communities\n\n######[Forza Inter Forums] (http://forzainterforums.com/forum.php)\n\n######[SempreInter](http://www.sempreinter.com/)\n\n######[Serpents of Madonnina] (http://www.serpentsofmadonnina.com/)\n\n######[FedeNerazzurra] (https://www.fedenerazzurra.net/)\n\n######[Discord](https://discordapp.com/invite/SfCJvqQ)\n\n"
+        str] = "###Inter communities\n\n######[Forza Inter Forums] (http://forzainterforums.com/forum.php)\n\n######[SempreInter](http://www.sempreinter.com/)\n\n######[Serpents of Madonnina] (http://www.serpentsofmadonnina.com/)\n\n######[FedeNerazzurra] (https://www.fedenerazzurra.net/)\n\n######[Discord](https://discord.com/invite/EEzFf5Cb)\n\n"
     WIKI: Final[
         str] = "###Useful Wiki links\n\n######[News Reliability Guide](https://reddit.com/r/FCInterMilan/wiki/transfer-news-reliability-guide/)\n\n######[Rules / Moderation](https://reddit.com/r/FCInterMilan/wiki/rules-and-moderation/)\n\n######[Tickets / Matchday Guide](https://reddit.com/r/FCInterMilan/wiki/tickets-and-matchday-guides/)\n\n######[Inter Bot Commands](https://reddit.com/r/FCInterMilan/wiki/bot-commands/)\n\n"
     PODCASTS: Final[

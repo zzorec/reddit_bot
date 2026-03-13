@@ -9,7 +9,7 @@ Following environment variables need to be set in order for the bot to work:
 * `REDDIT_USERNAME` - Bot's Reddit username.
 * `REDDIT_PASSWORD` - Bot's Reddit password.
 * `REDDIT_SUBREDDIT_NAME` - Subreddit name, where the bot will run.
-* `REDDIT_APPROVED_USER_LIST` - List of approved users on subreddit (comma delimited).
+* `REDDIT_APPROVED_USER_LIST` - List of approved users on subreddit (comma-delimited).
 * `RAPIDAPI_API_KEY` - Rapid API key for API Football.
 
 These can be set as operating system environment variables or in a `.env` file in the root directory of the project.
