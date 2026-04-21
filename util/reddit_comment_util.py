@@ -13,19 +13,20 @@ from reddit_bot.util.reddit_sidebar_util import update_sidebar
 
 
 def process_comments_organizer(reddit_instance) -> None:  # Open comments stream and check for new comments.
-    subreddit = reddit_instance.subreddit(config.Reddit.SUBREDDIT_NAME)
-    logger.info("Opening comments stream.")
-    comment_stream = subreddit.stream.comments()
-    try:
-        for comment in comment_stream:
-            try:
-                _process_comments(reddit_instance, comment)
-            except (RequestException, ServerError, Forbidden, RedditAPIException, BadJSON) as e:  # This error handling is needed because sometimes, Reddit API will error out and would stop the processing thread.
-                logger.warning(f"{e} - Error communicating with Reddit when processing comments!")
-    except (RequestException, ServerError, Forbidden, ValueError) as e:  # This error handling is needed because sometimes, Reddit API will error out and would stop the processing thread.
-        logger.error(f"{e} - Error communicating with Reddit when handling comment stream!")
-        time.sleep(60)
-        process_comments_organizer(reddit_instance)  # Retry.
+    while True:
+        subreddit = reddit_instance.subreddit(config.Reddit.SUBREDDIT_NAME)
+        logger.info("Opening comments stream.")
+        comment_stream = subreddit.stream.comments()
+        try:
+            for comment in comment_stream:
+                try:
+                    _process_comments(reddit_instance, comment)
+                except (RequestException, ServerError, Forbidden, RedditAPIException, BadJSON) as e:  # This error handling is needed because sometimes, Reddit API will error out and would stop the processing thread.
+                    logger.warning(f"{e} - Error communicating with Reddit when processing comments!")
+        except (RequestException, ServerError, Forbidden, ValueError, BadJSON) as e:  # This error handling is needed because sometimes, Reddit API will error out and would stop the processing thread.
+            logger.error(f"{e} - Error communicating with Reddit when handling comment stream!")
+            time.sleep(60)
+            continue  # Retry.
 
 
 def _process_comments(reddit_instance, comment) -> None:
@@ -113,7 +114,7 @@ def _process_comments(reddit_instance, comment) -> None:
         logger.info("Command !inter toggletransferdetection triggered by: " + comment_author)
         if comment_author in config.Reddit.APPROVED_USERS:
             old_value = variables.BotSettings.transfer_news_detection
-            if old_value is True:
+            if old_value:
                 variables.BotSettings.transfer_news_detection = False
                 comment.reply(resources.CommentReplies.TRANSFER_DETECTION_TURNED_OFF)
             else:
