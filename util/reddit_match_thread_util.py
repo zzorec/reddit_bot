@@ -493,7 +493,7 @@ def update_match_thread(reddit_instance):
             stats_home = game_info_json["statistics"][0].get("statistics", [])
             stats_away = game_info_json["statistics"][1].get("statistics", [])
 
-            submission_content += f"| {home_team_name} |  | {away_team_name} |\n"
+            submission_content += f"| {home_team_name} | Metric | {away_team_name} |\n"
             submission_content += "|:-:|:-:|:-:|\n"
 
             stat_mapping = {
