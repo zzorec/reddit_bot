@@ -46,7 +46,10 @@ def update_sidebar(reddit_instance) -> None:
             if match_data["result"] == "P-P":
                 sidebar_content += f"{match_data['date']}|{match_data['isAway']}{match_data['opponent']}|{match_data['result']}|{match_data['league']}\n"
             else:
-                sidebar_content += f"{match_data['date']}|{match_data['isAway']}{match_data['opponent']}|{match_data['result']} {last_fixtures[i]['goals']['home']}-{last_fixtures[i]['goals']['away']}|{match_data['league']}\n"
+                goals = last_fixtures[i].get("goals") or {}
+                score = f"{goals.get('home')}-{goals.get('away')}" if goals.get("home") is not None and goals.get("away") is not None else "/"
+                result = f"{match_data['result']} {score}".strip()
+                sidebar_content += f"{match_data['date']}|{match_data['isAway']}{match_data['opponent']}|{result}|{match_data['league']}\n"
 
         # Get next 3 fixtures
         url_next_fixtures = config.FootballRapidApi.get_next_team_fixtures_url(3)
